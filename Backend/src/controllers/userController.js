@@ -48,7 +48,7 @@ const registerUser = async (req, res) => {
 				.json({ message: 'User must be over 18 years old to register' });
 		}
 
-		// Create new user
+		// Create new user with 10 initial karma points
 		user = new User({
 			walletAddress,
 			name,
@@ -61,7 +61,7 @@ const registerUser = async (req, res) => {
 				facebook: facebook || '',
 				twitter: twitter || '',
 			},
-			karmaPoints: 0,
+			karmaPoints: 10, // Give new users 10 karma points
 		});
 
 		// Save user to database
@@ -228,7 +228,7 @@ const registerEmailUser = async (req, res) => {
 		const username =
 			email.split('@')[0] + Math.random().toString(36).substr(2, 4);
 
-		// Create new user
+		// Create new user with 10 initial karma points
 		user = new User({
 			email,
 			password,
@@ -242,7 +242,7 @@ const registerEmailUser = async (req, res) => {
 				facebook: facebook || '',
 				twitter: twitter || '',
 			},
-			karmaPoints: 0,
+			karmaPoints: 10, // Give new users 10 karma points
 		});
 
 		// Save user to database

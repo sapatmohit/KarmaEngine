@@ -1,140 +1,43 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { useKarma } from '../contexts/KarmaContext';
+import ApiService from '../services/api';
 
 const TransactionHistory = () => {
+  const { user } = useAuth();
+  const { activities } = useKarma();
   const [activeTab, setActiveTab] = useState('transactions');
   const [copiedId, setCopiedId] = useState(null);
   const [displayedTransactions, setDisplayedTransactions] = useState(8);
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Mock transaction data with karma activity types
-  const allTransactions = [
-    {
-      id: 1,
-      time: '48s',
-      type: 'Post',
-      karmaAmount: '5.0',
-      network: 'Instagram',
-      xlmAmount: '0.5',
-      transactionId: '0xaFE1...671A',
-      fullTransactionHash: 'aFE1b2c3d4e5f6789012345678901234567890abcd671A'
-    },
-    {
-      id: 2,
-      time: '48s',
-      type: 'Comment',
-      karmaAmount: '3.0',
-      network: 'Facebook',
-      xlmAmount: '0.3',
-      transactionId: '0xeCa2...6456',
-      fullTransactionHash: 'eCa2b3c4d5e6f789012345678901234567890abcde6456'
-    },
-    {
-      id: 3,
-      time: '48s',
-      type: 'Like',
-      karmaAmount: '1.0',
-      network: 'X',
-      xlmAmount: '0.1',
-      transactionId: '0x73ad...5805',
-      fullTransactionHash: '73adc4d5e6f789012345678901234567890abcdef5805'
-    },
-    {
-      id: 4,
-      time: '48s',
-      type: 'Repost',
-      karmaAmount: '2.0',
-      network: 'Instagram',
-      xlmAmount: '0.2',
-      transactionId: '0xe9Fb...b442',
-      fullTransactionHash: 'e9Fbc5d6e7f890123456789012345678901bcdefgb442'
-    },
-    {
-      id: 5,
-      time: '1m',
-      type: 'Report',
-      karmaAmount: '-5.0',
-      network: 'Facebook',
-      xlmAmount: '-0.5',
-      transactionId: '0xC5cE...77E0',
-      fullTransactionHash: 'C5cEd6e7f890123456789012345678901cdefgh77E0'
-    },
-    {
-      id: 6,
-      time: '2m',
-      type: 'Post',
-      karmaAmount: '4.5',
-      network: 'X',
-      xlmAmount: '0.45',
-      transactionId: '0x9B2f...3A1C',
-      fullTransactionHash: '9B2fe7f890123456789012345678901defghij3A1C'
-    },
-    {
-      id: 7,
-      time: '3m',
-      type: 'Comment',
-      karmaAmount: '2.5',
-      network: 'Instagram',
-      xlmAmount: '0.25',
-      transactionId: '0x4D7e...8F9B',
-      fullTransactionHash: '4D7ef890123456789012345678901efghijk8F9B'
-    },
-    {
-      id: 8,
-      time: '5m',
-      type: 'Like',
-      karmaAmount: '1.5',
-      network: 'Facebook',
-      xlmAmount: '0.15',
-      transactionId: '0x2A8c...6E3D',
-      fullTransactionHash: '2A8cf90123456789012345678901fghijkl6E3D'
-    },
-    {
-      id: 9,
-      time: '7m',
-      type: 'Post',
-      karmaAmount: '6.0',
-      network: 'Instagram',
-      xlmAmount: '0.6',
-      transactionId: '0x1B3d...9C2E',
-      fullTransactionHash: '1B3df0123456789012345678901ghijklm9C2E'
-    },
-    {
-      id: 10,
-      time: '8m',
-      type: 'Comment',
-      karmaAmount: '3.5',
-      network: 'Facebook',
-      xlmAmount: '0.35',
-      transactionId: '0x7F4a...5D8B',
-      fullTransactionHash: '7F4af1234567890123456789012hijklmn5D8B'
-    },
-    {
-      id: 11,
-      time: '10m',
-      type: 'Like',
-      karmaAmount: '2.0',
-      network: 'X',
-      xlmAmount: '0.2',
-      transactionId: '0x9E5b...3F7C',
-      fullTransactionHash: '9E5bf2345678901234567890123ijklmno3F7C'
-    },
-    {
-      id: 12,
-      time: '12m',
-      type: 'Repost',
-      karmaAmount: '4.0',
-      network: 'Instagram',
-      xlmAmount: '0.4',
-      transactionId: '0x2C6d...8A9E',
-      fullTransactionHash: '2C6df3456789012345678901234jklmnop8A9E'
-    }
-  ];
+  // Fetch real transaction data
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      if (!user?.walletAddress) return;
+      
+      try {
+        setLoading(true);
+        // For now, we'll use the activities from KarmaContext
+        // In a real implementation, this would come from a dedicated transactions API
+        setTransactions(activities.slice(0, displayedTransactions));
+      } catch (err) {
+        setError(err.message);
+        console.error('Error fetching transactions:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const transactions = allTransactions.slice(0, displayedTransactions);
+    fetchTransactions();
+  }, [user, activities, displayedTransactions]);
 
   const handleLoadMore = () => {
-    setDisplayedTransactions(prev => Math.min(prev + 8, allTransactions.length));
+    setDisplayedTransactions(prev => prev + 8);
   };
 
   const getActivityIcon = (type) => {
@@ -142,37 +45,57 @@ const TransactionHistory = () => {
       case 'post':
         return (
           <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+            </svg>
           </div>
         );
       case 'comment':
         return (
           <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M21 6h-2l-1.5-2h-11l-1.5 2h-2c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-4 10H7v-2h10v2zm0-3H7v-2h10v2zm0-3H7V8h10v2z"/>
+            </svg>
           </div>
         );
       case 'like':
         return (
-          <div className="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center">
+          <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center">
+            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </svg>
           </div>
         );
       case 'repost':
         return (
           <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
+            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/>
+            </svg>
           </div>
         );
       case 'report':
         return (
-          <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center">
+          <div className="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center">
+            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+            </svg>
           </div>
         );
       default:
         return (
           <div className="w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center">
+            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
           </div>
         );
     }
   };
 
   const getSocialMediaIcon = (network) => {
+    if (!network) return null;
+    
     switch (network.toLowerCase()) {
       case 'instagram':
         return (
@@ -217,11 +140,11 @@ const TransactionHistory = () => {
       case 'comment':
         return 'text-green-400';
       case 'like':
-        return 'text-yellow-400';
+        return 'text-red-400';
       case 'repost':
         return 'text-purple-400';
       case 'report':
-        return 'text-red-400';
+        return 'text-yellow-400';
       default:
         return 'text-gray-400';
     }
@@ -251,6 +174,26 @@ const TransactionHistory = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="bg-gray-900/50 backdrop-blur-md border border-gray-800 rounded-2xl p-6">
+        <div className="flex justify-center items-center h-32">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-gray-900/50 backdrop-blur-md border border-gray-800 rounded-2xl p-6">
+        <div className="text-center text-red-400 p-4">
+          <p>Error loading transactions: {error}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-gray-900/50 backdrop-blur-md border border-gray-800 rounded-2xl p-6">
       {/* Tabs */}
@@ -264,7 +207,7 @@ const TransactionHistory = () => {
             onClick={() => setActiveTab(tab.id)}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               activeTab === tab.id
-                ? 'bg-blue-600 text-white'
+                ? 'bg-purple-600 text-white'
                 : 'text-gray-400 hover:text-white'
             }`}
           >
@@ -292,73 +235,96 @@ const TransactionHistory = () => {
             </tr>
           </thead>
           <tbody>
-            {transactions.map((transaction) => (
-              <tr
-                key={transaction.id}
-                className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors"
-              >
-                <td className="py-3 px-2 text-sm text-gray-300">{transaction.time}</td>
-                <td className="py-3 px-2 text-sm">
-                  <div className="flex items-center space-x-2">
-                    {/* {getActivityIcon(transaction.type)} */}
-                    <span className={getTypeColor(transaction.type)}>{transaction.type}</span>
-                  </div>
-                </td>
-                <td className="py-3 px-2 text-sm text-white font-mono">{transaction.karmaAmount}</td>
-                <td className="py-3 px-2 text-sm">
-                  <div className="flex items-center space-x-2">
-                    {getSocialMediaIcon(transaction.network)}
-                    <span className="text-gray-300">{transaction.network}</span>
-                  </div>
-                </td>
-                <td className="py-3 px-2 text-sm text-white">{transaction.xlmAmount}</td>
-                <td className="py-3 px-2 text-sm">
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => handleTransactionClick(transaction.fullTransactionHash)}
-                      className="flex items-center space-x-1 text-gray-400 hover:text-blue-400 font-mono transition-colors group"
-                      title="View on Stellar Explorer"
-                    >
-                      <span>{transaction.transactionId}</span>
-                      <svg 
-                        className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" 
-                        fill="none" 
-                        stroke="currentColor" 
-                        viewBox="0 0 24 24"
+            {transactions.length > 0 ? (
+              transactions.map((transaction) => (
+                <tr
+                  key={transaction.id}
+                  className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors"
+                >
+                  <td className="py-3 px-2 text-sm text-gray-300">
+                    {transaction.timestamp 
+                      ? new Date(transaction.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+                      : 'Just now'}
+                  </td>
+                  <td className="py-3 px-2 text-sm">
+                    <div className="flex items-center space-x-2">
+                      {getActivityIcon(transaction.type)}
+                      <span className={getTypeColor(transaction.type)}>{transaction.type}</span>
+                    </div>
+                  </td>
+                  <td className="py-3 px-2 text-sm text-white font-mono">
+                    {transaction.finalKarma || transaction.value * (transaction.multiplier || 1)}
+                  </td>
+                  <td className="py-3 px-2 text-sm">
+                    <div className="flex items-center space-x-2">
+                      {getSocialMediaIcon(transaction.metadata?.network)}
+                      <span className="text-gray-300">
+                        {transaction.metadata?.network || 'General'}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="py-3 px-2 text-sm text-white">
+                    {(transaction.finalKarma || transaction.value * (transaction.multiplier || 1)) / 10} XLM
+                  </td>
+                  <td className="py-3 px-2 text-sm">
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => handleTransactionClick(transaction.id)}
+                        className="flex items-center space-x-1 text-gray-400 hover:text-purple-400 font-mono transition-colors group"
+                        title="View on Stellar Explorer"
                       >
-                        <path 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round" 
-                          strokeWidth={2} 
-                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" 
-                        />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={() => handleCopyTransactionId(transaction.fullTransactionHash, transaction.transactionId)}
-                      className="p-1 text-gray-500 hover:text-green-400 transition-colors group"
-                      title="Copy transaction ID"
-                    >
-                      {copiedId === transaction.transactionId ? (
-                        <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        <span>{transaction.id ? `${transaction.id.substring(0, 6)}...${transaction.id.substring(transaction.id.length - 4)}` : 'N/A'}</span>
+                        <svg 
+                          className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" 
+                          fill="none" 
+                          stroke="currentColor" 
+                          viewBox="0 0 24 24"
+                        >
+                          <path 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round" 
+                            strokeWidth={2} 
+                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" 
+                          />
                         </svg>
-                      ) : (
-                        <svg className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                        </svg>
-                      )}
-                    </button>
+                      </button>
+                      <button
+                        onClick={() => handleCopyTransactionId(transaction.id, transaction.id)}
+                        className="p-1 text-gray-500 hover:text-green-400 transition-colors group"
+                        title="Copy transaction ID"
+                      >
+                        {copiedId === transaction.id ? (
+                          <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        ) : (
+                          <svg className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="6" className="py-8 text-center text-gray-500">
+                  <div className="flex flex-col items-center justify-center">
+                    <svg className="w-12 h-12 mb-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <p>No transactions found</p>
                   </div>
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
 
       {/* Load More Button */}
-      {displayedTransactions < allTransactions.length && (
+      {transactions.length > 0 && transactions.length < activities.length && (
         <div className="mt-6 text-center">
           <button 
             onClick={handleLoadMore}
