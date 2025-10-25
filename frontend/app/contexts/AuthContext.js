@@ -70,24 +70,41 @@ export const AuthProvider = ({ children }) => {
 	};
 
 	const connectWallet = async () => {
-		if (typeof window.ethereum === 'undefined') {
+		// Check if we're in a browser environment
+		if (typeof window === 'undefined') {
+			throw new Error('Wallet connection is only available in browser');
+		}
+
+		// Check for Freighter (Stellar) or MetaMask (Ethereum)
+		const hasFreighter = typeof window.freighterApi !== 'undefined';
+		const hasMetaMask = typeof window.ethereum !== 'undefined';
+
+		if (!hasFreighter && !hasMetaMask) {
 			throw new Error(
-				'MetaMask is not installed. Please install MetaMask to continue.'
+				'No wallet extension found. Please install Freighter or MetaMask to continue.'
 			);
 		}
 
 		setIsConnecting(true);
 		try {
-			// Request account access
-			const accounts = await window.ethereum.request({
-				method: 'eth_requestAccounts',
-			});
+			let walletAddress;
 
-			if (accounts.length === 0) {
-				throw new Error('No accounts found. Please connect your wallet.');
+			if (hasFreighter) {
+				// Use Freighter for Stellar wallet
+				const { freighterApi } = await import('@stellar/freighter-api');
+				walletAddress = await freighterApi.getPublicKey();
+			} else if (hasMetaMask) {
+				// Use MetaMask for Ethereum wallet
+				const accounts = await window.ethereum.request({
+					method: 'eth_requestAccounts',
+				});
+
+				if (accounts.length === 0) {
+					throw new Error('No accounts found. Please connect your wallet.');
+				}
+
+				walletAddress = accounts[0];
 			}
-
-			const walletAddress = accounts[0];
 
 			// Check if user exists in backend
 			try {

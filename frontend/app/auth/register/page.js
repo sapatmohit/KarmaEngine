@@ -131,8 +131,25 @@ export default function RegisterPage() {
 			const isAllowed = await FreighterAPI.isAllowed();
 
 			if (!isAllowed) {
+				// Try MetaMask as fallback
+				if (typeof window.ethereum !== 'undefined') {
+					const accounts = await window.ethereum.request({
+						method: 'eth_requestAccounts',
+					});
+
+					if (accounts.length > 0) {
+						setFormData((prev) => ({
+							...prev,
+							walletAddress: accounts[0],
+						}));
+						setSuccess('Wallet connected successfully!');
+						setTimeout(() => setSuccess(''), 3000);
+						return;
+					}
+				}
+				
 				setError(
-					'Freighter wallet extension is not installed. Please install it to continue.'
+					'No wallet extension found. Please install Freighter or MetaMask to continue.'
 				);
 				setIsConnectingWallet(false);
 				return;
@@ -203,6 +220,54 @@ export default function RegisterPage() {
 					</p>
 
 					<form onSubmit={handleSubmit} className="space-y-6">
+						{/* Wallet Connection */}
+						<div className="mb-6">
+							<label className="block text-sm font-medium text-white mb-2">
+								Wallet Address (optional)
+							</label>
+							<div className="flex gap-2">
+								<input
+									type="text"
+									name="walletAddress"
+									value={formData.walletAddress}
+									onChange={handleChange}
+									placeholder="Enter your wallet address or connect below"
+									className="flex-1 px-4 py-3 rounded-lg bg-slate-800/50 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+								/>
+								<button
+									type="button"
+									onClick={connectWallet}
+									disabled={isConnectingWallet}
+									className="px-4 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center"
+								>
+									{isConnectingWallet ? (
+										<>
+											<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+											Connecting...
+										</>
+									) : (
+										<>
+											<svg
+												className="w-5 h-5 mr-2"
+												fill="none"
+												stroke="currentColor"
+												viewBox="0 0 24 24"
+												xmlns="http://www.w3.org/2000/svg"
+											>
+												<path
+													strokeLinecap="round"
+													strokeLinejoin="round"
+													strokeWidth="2"
+													d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+												></path>
+											</svg>
+											Connect
+										</>
+									)}
+								</button>
+							</div>
+						</div>
+
 						{/* Two Column Layout */}
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 							{/* Fullname */}
