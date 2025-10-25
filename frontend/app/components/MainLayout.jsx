@@ -37,9 +37,9 @@ const MainLayout = ({ children }) => {
 
 	return (
 		<div className="min-h-screen bg-gray-900">
-			<div className="container mx-auto px-4 py-8">
+			<div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
 				<Navigation />
-				<main>{children}</main>
+				<main className="mt-2">{children}</main>
 			</div>
 		</div>
 	);
