@@ -1,6 +1,6 @@
 const Staking = require('../models/Staking');
 const User = require('../models/User');
-const { stakeTokens, unstakeTokens, redeemKarmaForXLM } = require('../services/blockchainService');
+const { stakeTokensOnBlockchain, unstakeTokensOnBlockchain, redeemKarmaForXLMOnBlockchain } = require('../services/blockchainService');
 
 // Multiplier tiers based on staked amount
 const MULTIPLIER_TIERS = [
@@ -28,7 +28,7 @@ const getMultiplier = (amount) => {
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-const stakeTokensController = async (req, res) => {
+const stakeTokens = async (req, res) => {
   try {
     const { walletAddress, amount, transactionHash } = req.body;
 
@@ -39,7 +39,7 @@ const stakeTokensController = async (req, res) => {
     }
 
     // Stake tokens on blockchain (placeholder)
-    const blockchainResult = await stakeTokens(walletAddress, amount, transactionHash);
+    const blockchainResult = await stakeTokensOnBlockchain(walletAddress, amount, transactionHash);
 
     // Create staking record
     const staking = new Staking({
@@ -85,7 +85,7 @@ const stakeTokensController = async (req, res) => {
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-const unstakeTokensController = async (req, res) => {
+const unstakeTokens = async (req, res) => {
   try {
     const { walletAddress, stakingId } = req.body;
 
@@ -102,7 +102,7 @@ const unstakeTokensController = async (req, res) => {
     }
 
     // Unstake tokens on blockchain (placeholder)
-    const blockchainResult = await unstakeTokens(walletAddress, staking.amount, staking.transactionHash);
+    const blockchainResult = await unstakeTokensOnBlockchain(walletAddress, staking.amount, staking.transactionHash);
 
     // Update staking record
     staking.isActive = false;
@@ -182,7 +182,7 @@ const getUserStakingRecords = async (req, res) => {
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-const redeemKarmaController = async (req, res) => {
+const redeemKarma = async (req, res) => {
   try {
     const { walletAddress, karmaPoints } = req.body;
 
@@ -207,7 +207,7 @@ const redeemKarmaController = async (req, res) => {
     }
 
     // Redeem karma points on blockchain (placeholder)
-    const blockchainResult = await redeemKarmaForXLM(walletAddress, karmaPoints);
+    const blockchainResult = await redeemKarmaForXLMOnBlockchain(walletAddress, karmaPoints);
 
     // Update user's karma points
     user.karmaPoints -= karmaPoints;
@@ -234,8 +234,8 @@ const redeemKarmaController = async (req, res) => {
 };
 
 module.exports = {
-  stakeTokensController,
-  unstakeTokensController,
+  stakeTokens,
+  unstakeTokens,
   getUserStakingRecords,
-  redeemKarmaController
+  redeemKarma
 };

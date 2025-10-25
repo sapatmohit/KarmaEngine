@@ -5,14 +5,14 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 // User API functions
 export const userAPI = {
   // Register a new user
-  registerUser: async (walletAddress) => {
+  registerUser: async (payload) => {
     try {
       const response = await fetch(`${API_BASE_URL}/users/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ walletAddress }),
+        body: JSON.stringify(payload),
       });
       
       if (!response.ok) {

@@ -68,7 +68,7 @@ const updateKarmaOnBlockchain = async (walletAddress, karmaPoints) => {
  * @param {string} transactionHash - Transaction hash from wallet
  * @returns {Object} - Blockchain transaction result
  */
-const stakeTokens = async (walletAddress, amount, transactionHash) => {
+const stakeTokensOnBlockchain = async (walletAddress, amount, transactionHash) => {
   // Placeholder implementation
   // In a real implementation, this would:
   // 1. Connect to the blockchain network
@@ -96,7 +96,7 @@ const stakeTokens = async (walletAddress, amount, transactionHash) => {
  * @param {string} transactionHash - Transaction hash from wallet
  * @returns {Object} - Blockchain transaction result
  */
-const unstakeTokens = async (walletAddress, amount, transactionHash) => {
+const unstakeTokensOnBlockchain = async (walletAddress, amount, transactionHash) => {
   // Placeholder implementation
   // In a real implementation, this would:
   // 1. Connect to the blockchain network
@@ -172,7 +172,7 @@ const getStakingInfo = async (walletAddress) => {
  * @param {number} karmaPoints - Amount of karma points to redeem
  * @returns {Object} - Blockchain transaction result
  */
-const redeemKarmaForXLM = async (walletAddress, karmaPoints) => {
+const redeemKarmaForXLMOnBlockchain = async (walletAddress, karmaPoints) => {
   // Placeholder implementation
   // In a real implementation, this would:
   // 1. Connect to the blockchain network
@@ -202,9 +202,9 @@ const redeemKarmaForXLM = async (walletAddress, karmaPoints) => {
 module.exports = {
   registerUserOnBlockchain,
   updateKarmaOnBlockchain,
-  stakeTokens,
-  unstakeTokens,
+  stakeTokensOnBlockchain,
+  unstakeTokensOnBlockchain,
   getKarmaBalance,
   getStakingInfo,
-  redeemKarmaForXLM
+  redeemKarmaForXLMOnBlockchain
 };

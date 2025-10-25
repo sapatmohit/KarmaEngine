@@ -2,17 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import KarmaChart from './components/KarmaChart';
-import RedeemInterface from './components/RedeemInterface';
-import TransactionHistory from './components/TransactionHistory';
-import GlassCard from './components/GlassCard';
-import KarmaBadge from './components/KarmaBadge';
-import TierIndicator from './components/TierIndicator';
+import KarmaChart from '../components/KarmaChart';
+import RedeemInterface from '../components/RedeemInterface';
+import TransactionHistory from '../components/TransactionHistory';
+import GlassCard from '../components/GlassCard';
+import KarmaBadge from '../components/KarmaBadge';
+import TierIndicator from '../components/TierIndicator';
 import { motion } from 'framer-motion';
-import { useKarma } from './contexts/KarmaContext';
-import MainLayout from './components/MainLayout';
+import { useKarma } from '../contexts/KarmaContext';
+import MainLayout from '../components/MainLayout';
 
-export default function Home() {
+export default function Dashboard() {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -70,7 +70,35 @@ export default function Home() {
 
   return (
     <MainLayout>
-      <div className="space-y-8" key="home-content">
+      <div className="space-y-8">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+            <p className="text-gray-400 mt-2">Track your karma activities and staking progress</p>
+          </div>
+          <div className="flex items-center space-x-4">
+            <TierIndicator tier={userData.tier} stakeAmount={userData.stakeAmount} />
+          </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {stats.map((stat, index) => (
+            <motion.div
+              key={stat.name}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+            >
+              <GlassCard>
+                <h3 className="text-gray-400 text-sm font-medium">{stat.name}</h3>
+                <p className="text-2xl font-bold text-white mt-1">{stat.value}</p>
+              </GlassCard>
+            </motion.div>
+          ))}
+        </div>
+
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Karma Chart */}

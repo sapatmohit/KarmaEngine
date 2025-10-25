@@ -1,12 +1,12 @@
 const User = require('../models/User');
-const { getKarmaBalance, getStakingInfo } = require('../services/blockchainService');
+const { getKarmaBalance: getKarmaBalanceFromBlockchain, getStakingInfo } = require('../services/blockchainService');
 
 /**
  * Get user's karma balance
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-const getKarmaBalanceController = async (req, res) => {
+const getKarmaBalance = async (req, res) => {
   try {
     const { walletAddress } = req.params;
 
@@ -17,7 +17,7 @@ const getKarmaBalanceController = async (req, res) => {
     }
 
     // Get karma balance from blockchain
-    const blockchainKarma = await getKarmaBalance(walletAddress);
+    const blockchainKarma = await getKarmaBalanceFromBlockchain(walletAddress);
 
     res.json({
       user: {
@@ -39,7 +39,7 @@ const getKarmaBalanceController = async (req, res) => {
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-const syncKarmaController = async (req, res) => {
+const syncKarma = async (req, res) => {
   try {
     const { walletAddress } = req.params;
 
@@ -50,7 +50,7 @@ const syncKarmaController = async (req, res) => {
     }
 
     // Get karma balance from blockchain
-    const blockchainKarma = await getKarmaBalance(walletAddress);
+    const blockchainKarma = await getKarmaBalanceFromBlockchain(walletAddress);
     const stakingInfo = await getStakingInfo(walletAddress);
 
     // Update user in database
@@ -81,7 +81,7 @@ const syncKarmaController = async (req, res) => {
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-const getLeaderboardController = async (req, res) => {
+const getLeaderboard = async (req, res) => {
   try {
     const { limit = 10 } = req.query;
 
@@ -106,7 +106,7 @@ const getLeaderboardController = async (req, res) => {
 };
 
 module.exports = {
-  getKarmaBalanceController,
-  syncKarmaController,
-  getLeaderboardController
+  getKarmaBalance,
+  syncKarma,
+  getLeaderboard
 };

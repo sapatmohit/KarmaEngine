@@ -21,8 +21,8 @@ export default function Activities() {
   ];
 
 
-  const filteredActivities = activeTab === 'all' 
-    ? activities 
+  const filteredActivities = activeTab === 'all'
+    ? activities
     : activities.filter(activity => activity.type === activeTab);
 
   return (
