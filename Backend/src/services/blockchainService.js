@@ -9,9 +9,10 @@ const config = require('../config');
 /**
  * Register a user on the blockchain
  * @param {string} walletAddress - User's wallet address
+ * @param {Object} userData - Additional user data
  * @returns {Object} - Blockchain transaction result
  */
-const registerUserOnBlockchain = async (walletAddress) => {
+const registerUserOnBlockchain = async (walletAddress, userData = {}) => {
   // Placeholder implementation
   // In a real implementation, this would:
   // 1. Connect to the blockchain network
@@ -20,6 +21,7 @@ const registerUserOnBlockchain = async (walletAddress) => {
   // 4. Return the transaction result
   
   console.log(`Registering user ${walletAddress} on blockchain network ${config.blockchain.network}`);
+  console.log(`User data:`, userData);
   
   // Simulate blockchain interaction delay
   await new Promise(resolve => setTimeout(resolve, 100));
