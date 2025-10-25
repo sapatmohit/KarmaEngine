@@ -17,7 +17,8 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "node test_backend.js"
+    "test": "node test_backend.js",
+    "postinstall": "echo 'Skipping yarn setup'"
   },
   "dependencies": {
     "@stellar/stellar-sdk": "^14.3.0",
