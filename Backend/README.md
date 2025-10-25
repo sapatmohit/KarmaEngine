@@ -53,6 +53,16 @@ src/
 - `POST /karma/sync/:walletAddress` - Sync user's karma between database and blockchain
 - `GET /karma/leaderboard` - Get leaderboard
 
+### Instagram Integration (NEW)
+
+- `PUT /instagram/:walletAddress/username` - Set Instagram username
+- `POST /instagram/:walletAddress/scrape` - Scrape Instagram content
+- `GET /instagram/:walletAddress/content` - Get scraped content
+- `POST /instagram/:walletAddress/analyze` - Analyze sentiment and award karma
+- `POST /instagram/:walletAddress/process` - Complete workflow (scrape + analyze + award)
+
+For detailed Instagram integration documentation, see [`INSTAGRAM_INTEGRATION.md`](INSTAGRAM_INTEGRATION.md)
+
 ## Database Models
 
 ### User
