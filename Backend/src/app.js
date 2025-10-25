@@ -10,6 +10,7 @@ const userRoutes = require('./routes/userRoutes');
 const activityRoutes = require('./routes/activityRoutes');
 const stakingRoutes = require('./routes/stakingRoutes');
 const karmaRoutes = require('./routes/karmaRoutes');
+const instagramRoutes = require('./routes/instagramRoutes');
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
@@ -27,6 +28,7 @@ app.use('/users', userRoutes);
 app.use('/activities', activityRoutes);
 app.use('/staking', stakingRoutes);
 app.use('/karma', karmaRoutes);
+app.use('/instagram', instagramRoutes);
 
 // Error handling middleware
 app.use(errorHandler);

@@ -1,44 +1,48 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import Navigation from './Navigation';
-import { useState, useEffect } from 'react';
 
 const MainLayout = ({ children }) => {
-  const [isMounted, setIsMounted] = useState(false);
+	const [isMounted, setIsMounted] = useState(false);
+	const { isAuthenticated, isLoading } = useAuth();
+	const router = useRouter();
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+	useEffect(() => {
+		setIsMounted(true);
+	}, []);
 
-  if (!isMounted) {
-    return (
-      <div className="min-h-screen bg-dark-900">
-        <div className="container mx-auto px-4 py-8">
-          <div className="animate-pulse">
-            <div className="glass-effect h-16 mb-8 rounded-xl"></div>
-            <div className="space-y-6">
-              <div className="glass-effect h-64 rounded-xl"></div>
-              <div className="glass-effect h-32 rounded-xl"></div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="glass-effect h-48 rounded-xl"></div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+	useEffect(() => {
+		if (!isLoading && !isAuthenticated) {
+			router.push('/auth/login');
+		}
+	}, [isLoading, isAuthenticated, router]);
 
-  return (
-    <div className="min-h-screen bg-gray-900">
-      <div className="container mx-auto px-4 py-8">
-        <Navigation />
-        <main>{children}</main>
-      </div>
-    </div>
-  );
+	if (!isMounted || isLoading) {
+		return (
+			<div className="min-h-screen bg-slate-900 flex items-center justify-center">
+				<div className="text-center">
+					<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
+					<p className="text-gray-400">Loading...</p>
+				</div>
+			</div>
+		);
+	}
+
+	if (!isAuthenticated) {
+		return null; // Will redirect to login
+	}
+
+	return (
+		<div className="min-h-screen bg-gray-900">
+			<div className="container mx-auto px-4 py-8">
+				<Navigation />
+				<main>{children}</main>
+			</div>
+		</div>
+	);
 };
 
 export default MainLayout;
