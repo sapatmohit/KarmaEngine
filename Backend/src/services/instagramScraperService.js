@@ -13,6 +13,9 @@ const axios = require('axios');
 
 class InstagramScraperService {
   constructor() {
+    // Load environment variables
+    require('dotenv').config();
+    
     // RapidAPI is the default and recommended method
     this.scrapingMethod = process.env.INSTAGRAM_SCRAPING_METHOD || 'rapidapi';
     this.rapidApiKey = process.env.RAPIDAPI_KEY || '';
@@ -23,6 +26,9 @@ class InstagramScraperService {
       console.warn('⚠️  RAPIDAPI_KEY not configured. Instagram scraping will not work.');
       console.warn('   Get your key from: https://rapidapi.com/');
     }
+    
+    console.log('Instagram Scraper Service initialized with method:', this.scrapingMethod);
+    console.log('RAPIDAPI_KEY configured:', !!this.rapidApiKey);
   }
 
   /**

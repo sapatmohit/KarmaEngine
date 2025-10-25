@@ -1,6 +1,6 @@
 const config = require('../config');
 const { 
-  SorobanRpc, 
+  rpc,
   Contract, 
   nativeToScVal, 
   scValToNative,
@@ -21,7 +21,7 @@ const initializeSoroban = () => {
   }
   
   try {
-    sorobanClient = new SorobanRpc.Server(config.blockchain.rpcUrl, { allowHttp: true });
+    sorobanClient = new rpc.Server(config.blockchain.rpcUrl, { allowHttp: true });
     contract = new Contract(config.blockchain.contractAddress);
     console.log('Soroban client initialized successfully');
   } catch (error) {
