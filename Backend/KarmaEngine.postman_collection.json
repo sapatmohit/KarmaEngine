@@ -1,0 +1,286 @@
+{
+	"info": {
+		"_postman_id": "karma-engine-backend-testing",
+		"name": "Karma Engine Backend",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "User Registration",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"walletAddress\": \"0x742d35Cc6634C0532925a3b844Bc454e4438f44e\",\n  \"name\": \"John Doe\",\n  \"dateOfBirth\": \"1995-08-15\",\n  \"instagram\": \"johndoe_insta\",\n  \"facebook\": \"johndoe_fb\",\n  \"twitter\": \"johndoe_twitter\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/users/register",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"users",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get User by Wallet Address",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/users/0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"users",
+						"0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Record Activity",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"walletAddress\": \"0x742d35Cc6634C0532925a3b844Bc454e4438f44e\",\n  \"type\": \"post\",\n  \"metadata\": {\n    \"content\": \"This is a sample post for testing\"\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/activities",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"activities"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get User Activities",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/activities/0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"activities",
+						"0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Stake Tokens",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"walletAddress\": \"0x742d35Cc6634C0532925a3b844Bc454e4438f44e\",\n  \"amount\": 100,\n  \"transactionHash\": \"0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/staking/stake",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"staking",
+						"stake"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Unstake Tokens",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"walletAddress\": \"0x742d35Cc6634C0532925a3b844Bc454e4438f44e\",\n  \"stakingId\": \"60f7b3b3d9b3a42d8c9b3d91\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/staking/unstake",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"staking",
+						"unstake"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Redeem Karma for XLM",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"walletAddress\": \"0x742d35Cc6634C0532925a3b844Bc454e4438f44e\",\n  \"karmaPoints\": 100\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/staking/redeem",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"staking",
+						"redeem"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get User Staking Records",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/staking/0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"staking",
+						"0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Karma Balance",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/karma/balance/0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"karma",
+						"balance",
+						"0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Sync Karma",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/karma/sync/0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"karma",
+						"sync",
+						"0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Leaderboard",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/karma/leaderboard",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"karma",
+						"leaderboard"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
