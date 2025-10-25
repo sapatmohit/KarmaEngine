@@ -10,6 +10,14 @@ Each user starts with zero karma upon registration. All actions performed post-r
 
 KarmaChain integrates a staking mechanism, allowing users to lock tokens to amplify their influence and engagement credibility within the system.
 
+## New Feature: Redeemable Karma
+
+Users can now convert their accumulated Karma points into XLM tokens on the Stellar Testnet. This feature allows users to directly withdraw their earned rewards to their connected testnet wallet.
+
+- Conversion rate: 10 Karma points = 1 XLM
+- Redemptions occur directly on the Stellar Testnet
+- Withdrawals can be made directly to the user's connected testnet wallet
+
 ## Features
 
 - User registration and management
@@ -17,12 +25,13 @@ KarmaChain integrates a staking mechanism, allowing users to lock tokens to ampl
 - Staking mechanism to increase karma multipliers
 - Activity recording and history tracking
 - Tiered staking system (Regular, Trusted, Influencer)
+- **NEW**: Redeemable karma points for XLM tokens
 
 ## Contract Functions
 
 ### Core Functions
 
-- `initialize(owner)`: Initialize the contract with an owner address
+- `initialize(owner, xlm_token)`: Initialize the contract with an owner and XLM token contract
 - `register_user(user)`: Register a new user in the system
 - `get_karma(user)`: Get a user's current karma points
 - `get_stake(user)`: Get a user's current staking amount
@@ -41,6 +50,11 @@ KarmaChain integrates a staking mechanism, allowing users to lock tokens to ampl
 - `withdraw_stake(user, token, amount)`: Withdraw staked tokens
 - `get_multiplier(user)`: Get user's current karma multiplier based on stake
 
+### Redemption Functions
+
+- `redeem_karma(user, karma_amount)`: Convert karma points to XLM tokens
+- `get_xlm_token()`: Get the XLM token contract address
+
 ### Activity History
 
 - `get_activities(user)`: Get a user's activity history
@@ -50,6 +64,23 @@ KarmaChain integrates a staking mechanism, allowing users to lock tokens to ampl
 - **Regular User**: 0-100 tokens staked (1.0x multiplier)
 - **Trusted Contributor**: 100-500 tokens staked (1.5x multiplier)
 - **Influencer**: 500+ tokens staked (2.0x multiplier)
+
+## Redeemable Karma
+
+Users can convert their accumulated Karma points into XLM tokens at a rate of 10 Karma points = 1 XLM.
+
+### How it works:
+
+1. Users accumulate Karma points through social activities
+2. Users can redeem their Karma points for XLM tokens
+3. The contract automatically calculates the XLM amount based on the conversion rate
+4. XLM tokens are transferred directly to the user's wallet
+
+### Conversion Rate
+
+- 10 Karma points = 1 XLM token
+- Minimum redemption: 10 Karma points (1 XLM)
+- No maximum limit on redemptions
 
 ## Prerequisites
 
@@ -94,7 +125,8 @@ soroban contract invoke \
   --rpc-url https://soroban-testnet.stellar.org:443 \
   --network-passphrase "Test SDF Network ; September 2015" \
   -- initialize \
-  --owner ACCOUNT_PUBLIC_KEY
+  --owner ACCOUNT_PUBLIC_KEY \
+  --xlm_token XLM_TOKEN_CONTRACT_ID
 ```
 
 ### Register a User
@@ -184,6 +216,20 @@ soroban contract invoke \
   --amount 50
 ```
 
+### Redeem Karma for XLM
+
+```bash
+# Redeem karma points for XLM tokens
+soroban contract invoke \
+  --id CONTRACT_ID \
+  --source ACCOUNT_SECRET_KEY \
+  --rpc-url https://soroban-testnet.stellar.org:443 \
+  --network-passphrase "Test SDF Network ; September 2015" \
+  -- redeem_karma \
+  --user USER_PUBLIC_KEY \
+  --karma_amount 100
+```
+
 ### Query Functions
 
 ```bash
@@ -222,6 +268,14 @@ soroban contract invoke \
   --network-passphrase "Test SDF Network ; September 2015" \
   -- get_activities \
   --user USER_PUBLIC_KEY
+
+# Get XLM token contract address
+soroban contract invoke \
+  --id CONTRACT_ID \
+  --source ACCOUNT_SECRET_KEY \
+  --rpc-url https://soroban-testnet.stellar.org:443 \
+  --network-passphrase "Test SDF Network ; September 2015" \
+  -- get_xlm_token
 ```
 
 ## Testing
@@ -249,6 +303,7 @@ karma-engine/
 - `2`: Invalid amount
 - `3`: User not registered
 - `4`: User already registered
+- `5`: Insufficient karma
 
 ## Future Enhancements
 

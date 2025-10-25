@@ -24,6 +24,9 @@ const INFLUENCER_MULTIPLIER: u32 = 20; // 2x (stored as 20 with 1 decimal place)
 const TRUSTED_TIER_THRESHOLD: i128 = 100;
 const INFLUENCER_TIER_THRESHOLD: i128 = 500;
 
+// Conversion rate: 10 karma points = 1 XLM (represented as 10000000 stroops)
+const KARMA_TO_XLM_RATE: i128 = 10;
+
 // Error codes
 #[contracttype]
 #[derive(Clone, Copy)]
@@ -32,13 +35,15 @@ pub enum KarmaError {
     InvalidAmount = 2,
     UserNotRegistered = 3,
     AlreadyRegistered = 4,
+    InsufficientKarma = 5,
 }
 
 // Storage keys
 const OWNER: Symbol = symbol_short!("OWNER");
 const USERS: Symbol = symbol_short!("USERS");
 const STAKES: Symbol = symbol_short!("STAKES");
-const ACTIVITY: Symbol = symbol_short!("ACTIVITY"); // Shortened from ACTIVITIES
+const ACTIVITY: Symbol = symbol_short!("ACTIVITY");
+const KARMATOK: Symbol = symbol_short!("KARMATOK"); // Token contract for XLM (shortened to 8 chars)
 
 // User data structure
 #[contracttype]
@@ -62,12 +67,13 @@ pub struct KarmaEngineContract;
 
 #[contractimpl]
 impl KarmaEngineContract {
-    /// Initialize the contract with an owner
-    pub fn initialize(e: Env, owner: Address) {
+    /// Initialize the contract with an owner and XLM token contract
+    pub fn initialize(e: Env, owner: Address, xlm_token: Address) {
         if e.storage().instance().has(&OWNER) {
             panic!("Already initialized");
         }
         e.storage().instance().set(&OWNER, &owner);
+        e.storage().instance().set(&KARMATOK, &xlm_token);
     }
 
     /// Register a new user
@@ -187,6 +193,45 @@ impl KarmaEngineContract {
         } else {
             REGULAR_MULTIPLIER
         }
+    }
+
+    /// Redeem karma points for XLM tokens
+    pub fn redeem_karma(e: Env, user: Address, karma_amount: i32) {
+        user.require_auth();
+        
+        // Check if user is registered
+        let mut users: Map<Address, UserData> = e.storage().instance().get(&USERS).unwrap_or_else(|| Map::new(&e));
+        
+        if !users.contains_key(user.clone()) {
+            panic!("User not registered");
+        }
+        
+        // Check if user has enough karma
+        let mut user_data = users.get(user.clone()).unwrap();
+        if user_data.karma_points < karma_amount {
+            panic!("Insufficient karma balance");
+        }
+        
+        // Calculate XLM amount (10 karma = 1 XLM)
+        let xlm_amount = (karma_amount as i128) / KARMA_TO_XLM_RATE;
+        if xlm_amount == 0 {
+            panic!("Karma amount too small to redeem");
+        }
+        
+        // Deduct karma from user
+        user_data.karma_points -= karma_amount;
+        users.set(user.clone(), user_data);
+        e.storage().instance().set(&USERS, &users);
+        
+        // Transfer XLM tokens to user
+        let xlm_token: Address = e.storage().instance().get(&KARMATOK).unwrap();
+        let token_client = TokenClient::new(&e, &xlm_token);
+        token_client.transfer(&e.current_contract_address(), &user, &xlm_amount);
+    }
+
+    /// Get the XLM token contract address
+    pub fn get_xlm_token(e: Env) -> Address {
+        e.storage().instance().get(&KARMATOK).unwrap()
     }
 
     /// Internal function to record any activity and update karma

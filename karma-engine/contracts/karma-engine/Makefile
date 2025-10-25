@@ -13,7 +13,15 @@ deploy: build
 	soroban contract deploy \
 		--wasm target/wasm32-unknown-unknown/release/karma_engine.wasm \
 		--source ${SOURCE_ACCOUNT} \
-		--rpc-url ${RPC_URL} \
-		--network-passphrase "${NETWORK_PASSPHRASE}"
+		--rpc-url https://soroban-testnet.stellar.org:443 \
+		--network-passphrase "Test SDF Network ; September 2015"
 
-.PHONY: default build test clean deploy
+# Deploy with environment variables
+deploy-env: build
+	soroban contract deploy \
+		--wasm target/wasm32-unknown-unknown/release/karma_engine.wasm \
+		--source ${ACCOUNT_SECRET_KEY} \
+		--rpc-url https://soroban-testnet.stellar.org:443 \
+		--network-passphrase "Test SDF Network ; September 2015"
+
+.PHONY: default build test clean deploy deploy-env
