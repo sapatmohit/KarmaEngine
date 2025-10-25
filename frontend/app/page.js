@@ -1,23 +1,21 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import KarmaChart from './components/KarmaChart';
-import RedeemInterface from './components/RedeemInterface';
-import TransactionHistory from './components/TransactionHistory';
+import { useEffect, useState } from 'react';
 import GlassCard from './components/GlassCard';
 import KarmaBadge from './components/KarmaBadge';
-import TierIndicator from './components/TierIndicator';
-import AuthScreen from './components/auth/AuthScreen';
-import { motion } from 'framer-motion';
-import { useKarma } from './contexts/KarmaContext';
-import { useAuth } from './contexts/AuthContext';
+import KarmaChart from './components/KarmaChart';
 import MainLayout from './components/MainLayout';
+import RedeemInterface from './components/RedeemInterface';
+import TierIndicator from './components/TierIndicator';
+import TransactionHistory from './components/TransactionHistory';
+import AuthScreen from './components/auth/AuthScreen';
+import { useAuth } from './contexts/AuthContext';
+import { useKarma } from './contexts/KarmaContext';
 
 export default function Home() {
   const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const { karmaBalance, stakeAmount } = useKarma();
   const { user, isLoading, isAuthenticated } = useAuth();
 
@@ -36,34 +34,6 @@ export default function Home() {
   // Show auth screen if not authenticated
   if (!isAuthenticated) {
     return <AuthScreen />;
-  }
-
-  useEffect(() => {
-    // Check if user is authenticated
-    if (typeof window !== 'undefined') {
-      const user = localStorage.getItem('ke_user');
-      if (!user) {
-        router.push('/auth/login');
-      } else {
-        setIsAuthenticated(true);
-      }
-    }
-    setIsLoading(false);
-  }, [router]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-500 mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return null;
   }
 
   // Mock data - will be replaced with real data from API
