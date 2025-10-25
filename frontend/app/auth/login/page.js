@@ -1,18 +1,41 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { userAPI } from '../../utils/api';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { isAuthenticated, isLoading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Redirect to dashboard if already authenticated
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      router.push('/dashboard');
+    }
+  }, [isAuthenticated, isLoading, router]);
+
+  // If already authenticated, don't show the login form
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-500 mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isAuthenticated) {
+    return null; // Will redirect immediately
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,7 +48,6 @@ export default function LoginPage() {
     }
 
     try {
-      setIsLoading(true);
       // Mock login - in a real app, this would call an actual login API
       // For now, we'll simulate a successful login and store user data
       
@@ -45,11 +67,12 @@ export default function LoginPage() {
       }
       
       setSuccess('Login successful! Redirecting...');
+      
+      // The AuthContext will detect the localStorage change and update the auth state
+      // We'll redirect after a short delay to allow the context to update
       setTimeout(() => router.push('/dashboard'), 1500);
     } catch (err) {
       setError('Invalid email or password');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -149,10 +172,9 @@ export default function LoginPage() {
             {/* Sign In Button */}
             <button
               type="submit"
-              disabled={isLoading}
               className="w-full py-3 rounded-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition transform hover:scale-105"
             >
-              {isLoading ? 'Signing in...' : 'Sign in'}
+              Sign in
             </button>
           </form>
 

@@ -1,35 +1,29 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import KarmaChart from '../components/KarmaChart';
-import RedeemInterface from '../components/RedeemInterface';
-import TransactionHistory from '../components/TransactionHistory';
+import { useEffect } from 'react';
 import GlassCard from '../components/GlassCard';
 import KarmaBadge from '../components/KarmaBadge';
-import TierIndicator from '../components/TierIndicator';
-import { motion } from 'framer-motion';
-import { useKarma } from '../contexts/KarmaContext';
+import KarmaChart from '../components/KarmaChart';
 import MainLayout from '../components/MainLayout';
+import RedeemInterface from '../components/RedeemInterface';
+import TierIndicator from '../components/TierIndicator';
+import TransactionHistory from '../components/TransactionHistory';
+import { useAuth } from '../contexts/AuthContext';
+import { useKarma } from '../contexts/KarmaContext';
 
 export default function Dashboard() {
   const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const { karmaBalance, stakeAmount } = useKarma();
+  const { user, isLoading, isAuthenticated } = useAuth();
 
   useEffect(() => {
-    // Check if user is authenticated
-    if (typeof window !== 'undefined') {
-      const user = localStorage.getItem('ke_user');
-      if (!user) {
-        router.push('/auth/login');
-      } else {
-        setIsAuthenticated(true);
-      }
+    // Redirect to login if not authenticated
+    if (!isLoading && !isAuthenticated) {
+      router.push('/auth/login');
     }
-    setIsLoading(false);
-  }, [router]);
+  }, [isLoading, isAuthenticated, router]);
 
   if (isLoading) {
     return (
