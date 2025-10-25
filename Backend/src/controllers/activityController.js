@@ -53,8 +53,8 @@ const recordActivity = async (req, res) => {
 
     await activity.save();
 
-    // Update karma on blockchain (placeholder)
-    const blockchainResult = await updateKarmaOnBlockchain(walletAddress, user.karmaPoints);
+    // Update karma on blockchain by recording the specific activity
+    const blockchainResult = await updateKarmaOnBlockchain(walletAddress, type);
 
     res.status(201).json({
       message: 'Activity recorded successfully',

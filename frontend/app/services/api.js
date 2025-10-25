@@ -72,6 +72,13 @@ class ApiService {
 		return this.request(`/users/wallet/${walletAddress}`);
 	}
 
+	async updateUserProfile(walletAddress, profileData) {
+		return this.request(`/users/profile/${walletAddress}`, {
+			method: 'PUT',
+			body: JSON.stringify(profileData),
+		});
+	}
+
 	async updateUserKarma(walletAddress, karmaPoints) {
 		return this.request(`/users/${walletAddress}/karma`, {
 			method: 'PUT',

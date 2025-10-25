@@ -20,7 +20,7 @@ router.get('/wallet/:walletAddress', userController.getUserByWallet);
 // Get current user profile
 router.get('/me', auth, userController.getCurrentUser);
 
-// Update user karma points
-router.put('/:walletAddress/karma', userController.updateUserKarma);
+// Update user profile
+router.put('/profile/:walletAddress', userController.updateUserProfile);
 
 module.exports = router;

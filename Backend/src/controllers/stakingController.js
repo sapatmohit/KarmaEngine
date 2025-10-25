@@ -30,7 +30,12 @@ const getMultiplier = (amount) => {
  */
 const stakeTokens = async (req, res) => {
   try {
-    const { walletAddress, amount, transactionHash } = req.body;
+    const { walletAddress, tokenAddress, amount, transactionHash } = req.body;
+
+    // Validate required fields
+    if (!walletAddress || !tokenAddress || !amount) {
+      return res.status(400).json({ message: 'Wallet address, token address, and amount are required' });
+    }
 
     // Find user
     const user = await User.findOne({ walletAddress });
@@ -38,8 +43,8 @@ const stakeTokens = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Stake tokens on blockchain (placeholder)
-    const blockchainResult = await stakeTokensOnBlockchain(walletAddress, amount, transactionHash);
+    // Stake tokens on blockchain
+    const blockchainResult = await stakeTokensOnBlockchain(walletAddress, tokenAddress, amount);
 
     // Create staking record
     const staking = new Staking({
@@ -87,7 +92,12 @@ const stakeTokens = async (req, res) => {
  */
 const unstakeTokens = async (req, res) => {
   try {
-    const { walletAddress, stakingId } = req.body;
+    const { walletAddress, tokenAddress, stakingId, amount } = req.body;
+
+    // Validate required fields
+    if (!walletAddress || !tokenAddress || !stakingId || !amount) {
+      return res.status(400).json({ message: 'Wallet address, token address, staking ID, and amount are required' });
+    }
 
     // Find user
     const user = await User.findOne({ walletAddress });
@@ -101,8 +111,8 @@ const unstakeTokens = async (req, res) => {
       return res.status(404).json({ message: 'Staking record not found or already unstaked' });
     }
 
-    // Unstake tokens on blockchain (placeholder)
-    const blockchainResult = await unstakeTokensOnBlockchain(walletAddress, staking.amount, staking.transactionHash);
+    // Unstake tokens on blockchain
+    const blockchainResult = await unstakeTokensOnBlockchain(walletAddress, tokenAddress, amount);
 
     // Update staking record
     staking.isActive = false;
@@ -110,7 +120,7 @@ const unstakeTokens = async (req, res) => {
     await staking.save();
 
     // Update user's staked amount and multiplier
-    user.stakedAmount -= staking.amount;
+    user.stakedAmount -= amount;
     user.multiplier = getMultiplier(user.stakedAmount);
     await user.save();
 
@@ -206,7 +216,7 @@ const redeemKarma = async (req, res) => {
       return res.status(400).json({ message: 'Insufficient karma points' });
     }
 
-    // Redeem karma points on blockchain (placeholder)
+    // Redeem karma points on blockchain
     const blockchainResult = await redeemKarmaForXLMOnBlockchain(walletAddress, karmaPoints);
 
     // Update user's karma points

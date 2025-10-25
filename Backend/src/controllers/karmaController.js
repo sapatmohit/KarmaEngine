@@ -1,12 +1,12 @@
 const User = require('../models/User');
-const { getKarmaBalance: getKarmaBalanceFromBlockchain, getStakingInfo } = require('../services/blockchainService');
+const { getKarmaBalance, getStakingInfo } = require('../services/blockchainService');
 
 /**
  * Get user's karma balance
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-const getKarmaBalance = async (req, res) => {
+const getKarmaBalanceController = async (req, res) => {
   try {
     const { walletAddress } = req.params;
 
@@ -17,7 +17,7 @@ const getKarmaBalance = async (req, res) => {
     }
 
     // Get karma balance from blockchain
-    const blockchainKarma = await getKarmaBalanceFromBlockchain(walletAddress);
+    const blockchainKarma = await getKarmaBalance(walletAddress);
 
     res.json({
       user: {
@@ -49,8 +49,8 @@ const syncKarma = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Get karma balance from blockchain
-    const blockchainKarma = await getKarmaBalanceFromBlockchain(walletAddress);
+    // Get karma balance and staking info from blockchain
+    const blockchainKarma = await getKarmaBalance(walletAddress);
     const stakingInfo = await getStakingInfo(walletAddress);
 
     // Update user in database
@@ -106,7 +106,7 @@ const getLeaderboard = async (req, res) => {
 };
 
 module.exports = {
-  getKarmaBalance,
+  getKarmaBalance: getKarmaBalanceController,
   syncKarma,
   getLeaderboard
 };

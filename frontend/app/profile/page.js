@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import GlassCard from '../components/GlassCard';
 import MainLayout from '../components/MainLayout';
 import { useKarma } from '../contexts/KarmaContext';
+import ApiService from '../services/api';
 
 export default function Profile() {
   const router = useRouter();
@@ -60,23 +61,36 @@ export default function Profile() {
     e.preventDefault();
     
     try {
-      // Update user data in localStorage
-      if (typeof window !== 'undefined') {
-        const updatedUser = {
-          ...user,
+      // Update user data in backend
+      if (user && user.walletAddress) {
+        const profileData = {
           name: formData.name,
-          email: formData.email,
           dateOfBirth: formData.dateOfBirth,
-          socialMedia: {
-            instagram: formData.instagram,
-            facebook: formData.facebook,
-            twitter: formData.twitter
-          }
+          instagram: formData.instagram,
+          facebook: formData.facebook,
+          twitter: formData.twitter
         };
         
-        localStorage.setItem('ke_user', JSON.stringify(updatedUser));
-        setUser(updatedUser);
-        setIsEditing(false);
+        const response = await ApiService.updateUserProfile(user.walletAddress, profileData);
+        
+        // Update user data in localStorage
+        if (typeof window !== 'undefined') {
+          const updatedUser = {
+            ...user,
+            name: formData.name,
+            email: formData.email,
+            dateOfBirth: formData.dateOfBirth,
+            socialMedia: {
+              instagram: formData.instagram,
+              facebook: formData.facebook,
+              twitter: formData.twitter
+            }
+          };
+          
+          localStorage.setItem('ke_user', JSON.stringify(updatedUser));
+          setUser(updatedUser);
+          setIsEditing(false);
+        }
       }
     } catch (err) {
       console.error('Failed to update profile:', err);

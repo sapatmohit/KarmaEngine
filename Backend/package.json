@@ -20,6 +20,7 @@
     "test": "node test_backend.js"
   },
   "dependencies": {
+    "@stellar/stellar-sdk": "^14.3.0",
     "axios": "^1.12.2",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",

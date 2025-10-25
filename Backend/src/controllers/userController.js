@@ -76,7 +76,7 @@ const registerUser = async (req, res) => {
 			socialMedia: user.socialMedia,
 		};
 
-		// Register user on blockchain (placeholder)
+		// Register user on blockchain
 		const blockchainResult = await registerUserOnBlockchain(
 			walletAddress,
 			userData
@@ -140,36 +140,52 @@ const getUserByWallet = async (req, res) => {
 };
 
 /**
- * Update user karma points
+ * Update user profile information
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-const updateUserKarma = async (req, res) => {
+const updateUserProfile = async (req, res) => {
 	try {
 		const { walletAddress } = req.params;
-		const { karmaPoints } = req.body;
+		const { name, dateOfBirth, instagram, facebook, twitter } = req.body;
 
-		const user = await User.findOneAndUpdate(
-			{ walletAddress },
-			{ karmaPoints, lastActivity: Date.now() },
-			{ new: true }
-		);
-
+		// Find user
+		const user = await User.findOne({ walletAddress });
 		if (!user) {
 			return res.status(404).json({ message: 'User not found' });
 		}
 
+		// Update user profile
+		if (name) user.name = name;
+		if (dateOfBirth) user.dateOfBirth = new Date(dateOfBirth);
+		if (dateOfBirth) user.isOver18 = isOver18(dateOfBirth);
+		
+		if (instagram !== undefined) user.socialMedia.instagram = instagram;
+		if (facebook !== undefined) user.socialMedia.facebook = facebook;
+		if (twitter !== undefined) user.socialMedia.twitter = twitter;
+
+		// Save updated user
+		await user.save();
+
 		res.json({
-			message: 'User karma updated successfully',
+			message: 'User profile updated successfully',
 			user: {
 				id: user._id,
 				walletAddress: user.walletAddress,
+				name: user.name,
+				username: user.username,
+				avatar: user.avatar,
+				dateOfBirth: user.dateOfBirth,
+				isOver18: user.isOver18,
+				socialMedia: user.socialMedia,
 				karmaPoints: user.karmaPoints,
+				stakedAmount: user.stakedAmount,
+				multiplier: user.multiplier,
 			},
 		});
 	} catch (error) {
-		console.error('Update karma error:', error);
-		res.status(500).json({ message: 'Server error while updating karma' });
+		console.error('Update profile error:', error);
+		res.status(500).json({ message: 'Server error while updating profile' });
 	}
 };
 
@@ -345,5 +361,5 @@ module.exports = {
 	loginEmailUser,
 	getUserByWallet,
 	getCurrentUser,
-	updateUserKarma,
+	updateUserProfile,
 };
