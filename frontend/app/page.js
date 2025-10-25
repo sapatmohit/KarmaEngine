@@ -6,12 +6,32 @@ import TransactionHistory from './components/TransactionHistory';
 import GlassCard from './components/GlassCard';
 import KarmaBadge from './components/KarmaBadge';
 import TierIndicator from './components/TierIndicator';
+import AuthScreen from './components/auth/AuthScreen';
 import { motion } from 'framer-motion';
 import { useKarma } from './contexts/KarmaContext';
+import { useAuth } from './contexts/AuthContext';
 import MainLayout from './components/MainLayout';
 
 export default function Home() {
   const { karmaBalance, stakeAmount } = useKarma();
+  const { user, isLoading, isAuthenticated } = useAuth();
+
+  // Show loading screen while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <div className="flex items-center space-x-3">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+          <span className="text-white text-lg">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Show auth screen if not authenticated
+  if (!isAuthenticated) {
+    return <AuthScreen />;
+  }
 
   // Mock data - will be replaced with real data from API
   const userData = {

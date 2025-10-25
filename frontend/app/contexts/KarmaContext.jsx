@@ -1,7 +1,8 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect } from 'react';
-import { userAPI, karmaAPI, stakingAPI, activityAPI } from '../utils/api';
+import { useAuth } from './AuthContext';
+import ApiService from '../services/api';
 
 const KarmaContext = createContext();
 
@@ -14,97 +15,75 @@ export const useKarma = () => {
 };
 
 export const KarmaProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const { user, isAuthenticated } = useAuth();
   const [karmaBalance, setKarmaBalance] = useState(0);
   const [stakeAmount, setStakeAmount] = useState(0);
   const [activities, setActivities] = useState([]);
-  const [leaderboard, setLeaderboard] = useState([]);
+  const [karmaHistory, setKarmaHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Initialize user data (mock for now)
+  // Update karma balance when user changes
   useEffect(() => {
-    // In a real app, this would come from wallet connection
-    const mockUser = {
-      walletAddress: '0x742d35Cc6634C0532925a3b8D4C0532925a3b8D4',
-      registered: true,
-    };
-    
-    setUser(mockUser);
-    
-    // Load initial data
-    loadUserData(mockUser.walletAddress);
-  }, []);
+    if (user) {
+      setKarmaBalance(user.karmaPoints || 0);
+      setStakeAmount(user.stakedAmount || 0);
+      loadUserData();
+    } else {
+      setKarmaBalance(0);
+      setStakeAmount(0);
+      setActivities([]);
+      setKarmaHistory([]);
+    }
+  }, [user]);
 
-  const loadUserData = async (walletAddress) => {
+  const loadUserData = async () => {
+    if (!user?.walletAddress) return;
+    
     setIsLoading(true);
     setError(null);
     
     try {
-      // In a real app, these would be actual API calls
-      // const userData = await userAPI.getUserByWallet(walletAddress);
-      // const karmaData = await karmaAPI.getKarmaBalance(walletAddress);
-      // const stakingData = await stakingAPI.getUserStakingRecords(walletAddress);
-      // const activityData = await activityAPI.getUserActivities(walletAddress);
+      // Load user activities
+      const activitiesResponse = await ApiService.getUserActivities(user.walletAddress);
+      setActivities(activitiesResponse.activities || []);
       
-      // Mock data for now
-      setKarmaBalance(1250);
-      setStakeAmount(350);
+      // Load karma history
+      const karmaResponse = await ApiService.getKarmaHistory(user.walletAddress);
+      setKarmaHistory(karmaResponse.history || []);
+    } catch (err) {
+      setError(err.message);
+      console.error('Error loading user data:', err);
+      
+      // Use mock data as fallback
       setActivities([
         { id: 1, type: 'post', karma: 5, multiplier: 1.5, timestamp: '2 hours ago' },
         { id: 2, type: 'comment', karma: 3, multiplier: 1.5, timestamp: '5 hours ago' },
         { id: 3, type: 'like', karma: 1, multiplier: 1.5, timestamp: '1 day ago' },
         { id: 4, type: 'repost', karma: 2, multiplier: 1.5, timestamp: '2 days ago' },
       ]);
-      
-      setLeaderboard([
-        { rank: 1, user: '0x742d...25a3', karma: 15420, tier: 'Influencer' },
-        { rank: 2, user: '0xa1b2...abcd', karma: 12850, tier: 'Influencer' },
-        { rank: 3, user: '0x4567...def0', karma: 11230, tier: 'Influencer' },
-      ]);
-    } catch (err) {
-      setError(err.message);
-      console.error('Error loading user data:', err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const connectWallet = async () => {
-    // In a real app, this would connect to a wallet like MetaMask
-    // For now, we'll just use mock data
-    const mockUser = {
-      walletAddress: '0x742d35Cc6634C0532925a3b8D4C0532925a3b8D4',
-      registered: true,
-    };
-    
-    setUser(mockUser);
-    loadUserData(mockUser.walletAddress);
-  };
-
   const recordActivity = async (activityData) => {
+    if (!user?.walletAddress) return;
+    
     setIsLoading(true);
     setError(null);
     
     try {
-      // In a real app: await activityAPI.recordActivity(activityData);
+      const response = await ApiService.recordActivity({
+        walletAddress: user.walletAddress,
+        ...activityData
+      });
       
-      // Mock implementation
-      const newActivity = {
-        id: activities.length + 1,
-        ...activityData,
-        karma: activityData.type === 'post' ? 5 : 
-               activityData.type === 'comment' ? 3 : 
-               activityData.type === 'like' ? 1 : 
-               activityData.type === 'repost' ? 2 : -5,
-        multiplier: stakeAmount >= 500 ? 2 : stakeAmount >= 100 ? 1.5 : 1,
-        timestamp: 'Just now'
-      };
+      // Update local state
+      setKarmaBalance(response.newKarmaBalance);
+      loadUserData(); // Reload activities
       
-      setActivities(prev => [newActivity, ...prev]);
-      setKarmaBalance(prev => prev + (newActivity.karma * newActivity.multiplier));
-      
-      return newActivity;
+      return response;
     } catch (err) {
       setError(err.message);
       console.error('Error recording activity:', err);
@@ -114,41 +93,46 @@ export const KarmaProvider = ({ children }) => {
     }
   };
 
-  const stakeTokens = async (amount) => {
+  const stakeKarma = async (amount) => {
+    if (!user?.walletAddress) return;
+    
     setIsLoading(true);
     setError(null);
     
     try {
-      // In a real app: await stakingAPI.stakeTokens({ amount, walletAddress: user.walletAddress });
+      const response = await ApiService.stakeKarma(user.walletAddress, amount);
       
-      // Mock implementation
-      setStakeAmount(prev => prev + parseFloat(amount));
-      setKarmaBalance(prev => prev + 10); // Bonus for staking
+      // Update local state
+      setKarmaBalance(prev => prev - amount);
+      setStakeAmount(prev => prev + amount);
       
-      return { success: true };
+      return response;
     } catch (err) {
       setError(err.message);
-      console.error('Error staking tokens:', err);
+      console.error('Error staking karma:', err);
       throw err;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const unstakeTokens = async (amount) => {
+  const unstakeKarma = async (amount) => {
+    if (!user?.walletAddress) return;
+    
     setIsLoading(true);
     setError(null);
     
     try {
-      // In a real app: await stakingAPI.unstakeTokens({ amount, walletAddress: user.walletAddress });
+      const response = await ApiService.unstakeKarma(user.walletAddress, amount);
       
-      // Mock implementation
-      setStakeAmount(prev => Math.max(0, prev - parseFloat(amount)));
+      // Update local state
+      setKarmaBalance(prev => prev + amount);
+      setStakeAmount(prev => prev - amount);
       
-      return { success: true };
+      return response;
     } catch (err) {
       setError(err.message);
-      console.error('Error unstaking tokens:', err);
+      console.error('Error unstaking karma:', err);
       throw err;
     } finally {
       setIsLoading(false);
@@ -156,17 +140,16 @@ export const KarmaProvider = ({ children }) => {
   };
 
   const value = {
-    user,
     karmaBalance,
     stakeAmount,
     activities,
-    leaderboard,
+    karmaHistory,
     isLoading,
     error,
-    connectWallet,
     recordActivity,
-    stakeTokens,
-    unstakeTokens,
+    stakeKarma,
+    unstakeKarma,
+    loadUserData,
   };
 
   return (
