@@ -32,7 +32,7 @@ const MainLayout = ({ children }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-dark-900 to-dark-800">
+    <div className="min-h-screen bg-gray-900">
       <div className="container mx-auto px-4 py-8">
         <Navigation />
         <main>{children}</main>

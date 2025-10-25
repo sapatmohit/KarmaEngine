@@ -1,5 +1,8 @@
 'use client';
 
+import KarmaChart from './components/KarmaChart';
+import RedeemInterface from './components/RedeemInterface';
+import TransactionHistory from './components/TransactionHistory';
 import GlassCard from './components/GlassCard';
 import KarmaBadge from './components/KarmaBadge';
 import TierIndicator from './components/TierIndicator';
@@ -35,97 +38,50 @@ export default function Home() {
   return (
     <MainLayout>
       <div className="space-y-8">
-        {/* Welcome Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <GlassCard className="text-center py-12">
-            <h1 className="text-3xl md:text-4xl font-bold mb-4">
-              Welcome to <span className="text-gradient">KarmaChain</span>
-            </h1>
-            <p className="text-gray-400 max-w-2xl mx-auto">
-              Track your decentralized reputation and build trust in the ecosystem through meaningful interactions.
-            </p>
-          </GlassCard>
-        </motion.div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            <GlassCard className="text-center py-6">
-              <h3 className="text-gray-400 text-sm mb-1">Your Karma Balance</h3>
-              <div className="flex justify-center items-baseline">
-                <span className="text-3xl font-bold">{userData.karmaBalance}</span>
-                <KarmaBadge karma={userData.karmaBalance} size="sm" className="ml-2" />
-              </div>
-            </GlassCard>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <GlassCard className="text-center py-6">
-              <h3 className="text-gray-400 text-sm mb-1">Staking Tier</h3>
-              <div className="text-xl font-bold text-primary">{userData.tier}</div>
-              <div className="text-sm text-gray-400 mt-1">{userData.multiplier}x Multiplier</div>
-            </GlassCard>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
-            <GlassCard className="text-center py-6">
-              <h3 className="text-gray-400 text-sm mb-1">Wallet Connected</h3>
-              <div className="font-mono text-sm truncate">{userData.walletAddress.substring(0, 6)}...{userData.walletAddress.substring(userData.walletAddress.length - 4)}</div>
-            </GlassCard>
-          </motion.div>
-        </div>
-
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Tier Progress */}
+          {/* Left Column - Karma Chart */}
+          <div className="lg:col-span-2">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
+              transition={{ duration: 0.5 }}
             >
-              <GlassCard>
-                <h2 className="text-xl font-bold mb-4">Staking Progress</h2>
-                <TierIndicator tier={userData.tier} stakeAmount={userData.stakeAmount} />
-                <div className="mt-6 flex justify-between items-center">
-                  <div>
-                    <p className="text-gray-400">Currently Staked</p>
-                    <p className="text-2xl font-bold">{userData.stakeAmount} KARMA</p>
-                  </div>
-                  <button className="btn-glass-primary px-4 py-2 rounded-lg">
-                    Manage Stake
-                  </button>
-                </div>
-              </GlassCard>
+              <KarmaChart />
+            </motion.div>
+
+            {/* Transaction History */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="mt-6"
+            >
+              <TransactionHistory />
+            </motion.div>
+          </div>
+
+          {/* Right Column - Redeem Interface */}
+          <div className="space-y-6">
+            {/* Redeem Interface */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <RedeemInterface />
             </motion.div>
 
             {/* Recent Activities */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
             >
               <GlassCard>
                 <h2 className="text-xl font-bold mb-4">Recent Activities</h2>
                 <div className="space-y-4">
-                  {recentActivities.map((activity) => (
+                  {recentActivities.slice(0, 3).map((activity) => (
                     <div key={activity.id} className="flex items-center justify-between pb-4 border-b border-gray-800 last:border-0 last:pb-0">
                       <div>
                         <h3 className="font-medium">{activity.type}</h3>
@@ -141,53 +97,6 @@ export default function Home() {
                 <button className="w-full mt-4 btn-glass py-3 rounded-lg">
                   View All Activities
                 </button>
-              </GlassCard>
-            </motion.div>
-          </div>
-
-          {/* Right Column */}
-          <div className="space-y-6">
-            {/* Quick Stats */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.6 }}
-            >
-              <GlassCard>
-                <h2 className="text-xl font-bold mb-4">Your Stats</h2>
-                <div className="space-y-4">
-                  {stats.map((stat, index) => (
-                    <div key={index} className="flex justify-between items-center pb-3 border-b border-gray-800 last:border-0 last:pb-0">
-                      <span className="text-gray-400">{stat.name}</span>
-                      <span className="font-medium">{stat.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </GlassCard>
-            </motion.div>
-
-            {/* Quick Actions */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.7 }}
-            >
-              <GlassCard>
-                <h2 className="text-xl font-bold mb-4">Quick Actions</h2>
-                <div className="grid grid-cols-2 gap-3">
-                  <button className="btn-glass py-3 rounded-lg text-sm">
-                    Post
-                  </button>
-                  <button className="btn-glass py-3 rounded-lg text-sm">
-                    Comment
-                  </button>
-                  <button className="btn-glass py-3 rounded-lg text-sm">
-                    Like
-                  </button>
-                  <button className="btn-glass py-3 rounded-lg text-sm">
-                    Repost
-                  </button>
-                </div>
               </GlassCard>
             </motion.div>
           </div>

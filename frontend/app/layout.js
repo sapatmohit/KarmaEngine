@@ -5,7 +5,7 @@ import { KarmaProvider } from './contexts/KarmaContext'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
-  title: 'KarmaChain - Decentralized Reputation Protocol',
+  title: 'Karma Engine - Decentralized Reputation Protocol',
   description: 'Track your on-chain reputation and karma score',
 }
 
