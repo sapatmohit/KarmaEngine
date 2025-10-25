@@ -4,15 +4,19 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import GlassCard from '../components/GlassCard';
 import MainLayout from '../components/MainLayout';
+import { useAuth } from '../contexts/AuthContext';
 import { useKarma } from '../contexts/KarmaContext';
 import ApiService from '../services/api';
 
 export default function Profile() {
   const router = useRouter();
   const { karmaBalance, stakeAmount } = useKarma();
-  const [user, setUser] = useState(null);
+  const { user, connectWallet, logout } = useAuth();
+  const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [isConnectingWallet, setIsConnectingWallet] = useState(false);
+  const [walletConnectionError, setWalletConnectionError] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -25,29 +29,22 @@ export default function Profile() {
   useEffect(() => {
     // Check if user is authenticated
     if (typeof window !== 'undefined') {
-      const storedUser = localStorage.getItem('ke_user');
-      if (!storedUser) {
+      if (!user) {
         router.push('/auth/login');
       } else {
-        try {
-          const userData = JSON.parse(storedUser);
-          setUser(userData);
-          setFormData({
-            name: userData.name || '',
-            email: userData.email || '',
-            dateOfBirth: userData.dateOfBirth || '',
-            instagram: userData.socialMedia?.instagram || '',
-            facebook: userData.socialMedia?.facebook || '',
-            twitter: userData.socialMedia?.twitter || '',
-          });
-        } catch (e) {
-          console.error('Failed to parse user data');
-          router.push('/auth/login');
-        }
+        setUserData(user);
+        setFormData({
+          name: user.name || '',
+          email: user.email || '',
+          dateOfBirth: user.dateOfBirth || '',
+          instagram: user.socialMedia?.instagram || '',
+          facebook: user.socialMedia?.facebook || '',
+          twitter: user.socialMedia?.twitter || '',
+        });
       }
     }
     setIsLoading(false);
-  }, [router]);
+  }, [user, router]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -62,7 +59,7 @@ export default function Profile() {
     
     try {
       // Update user data in backend
-      if (user && user.walletAddress) {
+      if (userData && userData.walletAddress) {
         const profileData = {
           name: formData.name,
           dateOfBirth: formData.dateOfBirth,
@@ -71,12 +68,12 @@ export default function Profile() {
           twitter: formData.twitter
         };
         
-        const response = await ApiService.updateUserProfile(user.walletAddress, profileData);
+        const response = await ApiService.updateUserProfile(userData.walletAddress, profileData);
         
         // Update user data in localStorage
         if (typeof window !== 'undefined') {
           const updatedUser = {
-            ...user,
+            ...userData,
             name: formData.name,
             email: formData.email,
             dateOfBirth: formData.dateOfBirth,
@@ -88,7 +85,7 @@ export default function Profile() {
           };
           
           localStorage.setItem('ke_user', JSON.stringify(updatedUser));
-          setUser(updatedUser);
+          setUserData(updatedUser);
           setIsEditing(false);
         }
       }
@@ -96,6 +93,41 @@ export default function Profile() {
       console.error('Failed to update profile:', err);
     }
   };
+
+  const handleConnectWallet = async () => {
+    setIsConnectingWallet(true);
+    setWalletConnectionError('');
+    
+    try {
+      const result = await connectWallet();
+      if (result.isNewUser) {
+        // Handle new user registration if needed
+        console.log('New wallet connected:', result.walletAddress);
+      } else {
+        // User already exists
+        setUserData(result.user);
+      }
+    } catch (err) {
+      setWalletConnectionError(err.message || 'Failed to connect wallet');
+    } finally {
+      setIsConnectingWallet(false);
+    }
+  };
+
+  const getTierInfo = (stake) => {
+    if (stake >= 500) return { name: 'Influencer', color: 'from-purple-500 to-pink-500' };
+    if (stake >= 100) return { name: 'Trusted', color: 'from-blue-500 to-cyan-500' };
+    return { name: 'Regular', color: 'from-gray-500 to-gray-600' };
+  };
+
+  const getMultiplier = (stake) => {
+    if (stake >= 500) return 2;
+    if (stake >= 100) return 1.5;
+    return 1;
+  };
+
+  const tierInfo = getTierInfo(stakeAmount);
+  const multiplier = getMultiplier(stakeAmount);
 
   if (isLoading) {
     return (
@@ -110,18 +142,15 @@ export default function Profile() {
     );
   }
 
-  if (!user) {
+  if (!userData) {
     return null;
   }
 
-  // Mock data for display
-  const userData = {
-    walletAddress: user.walletAddress || '0x742d35Cc6634C0532925a3b8D4C0532925a3b8D4',
-    karmaBalance: karmaBalance,
-    stakeAmount: stakeAmount,
-    tier: stakeAmount >= 500 ? 'Influencer' : stakeAmount >= 100 ? 'Trusted' : 'Regular',
-    multiplier: stakeAmount >= 500 ? 2 : stakeAmount >= 100 ? 1.5 : 1
-  };
+  // Mock data for additional wallets
+  const connectedWallets = [
+    { id: 1, name: 'Stellar', address: userData.walletAddress, type: 'primary', balance: '1,245.32 XLM' },
+    // Add more wallets as needed
+  ];
 
   return (
     <MainLayout>
@@ -162,39 +191,109 @@ export default function Profile() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Profile Info */}
           <div className="lg:col-span-1 space-y-6">
-            <GlassCard>
-              <div className="flex flex-col items-center text-center">
+            <GlassCard className="text-center">
+              <div className="flex flex-col items-center">
                 <div className="w-24 h-24 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center mb-4">
                   <span className="text-2xl font-bold text-white">
-                    {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                    {userData.name ? userData.name.charAt(0).toUpperCase() : 'U'}
                   </span>
                 </div>
-                <h2 className="text-xl font-bold text-white">{user.name || 'User'}</h2>
-                <p className="text-gray-400 text-sm mt-1">{userData.tier} Tier</p>
-                <div className="flex items-center mt-3 px-3 py-1 rounded-full bg-gray-800 text-sm">
-                  <span className="text-gray-400 mr-2">Wallet:</span>
-                  <span className="font-mono text-xs">
-                    {userData.walletAddress.substring(0, 6)}...{userData.walletAddress.substring(userData.walletAddress.length - 4)}
+                <h2 className="text-xl font-bold text-white">{userData.name || 'User'}</h2>
+                <div className="mt-2">
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r ${tierInfo.color} text-white`}>
+                    {tierInfo.name} Tier
                   </span>
                 </div>
+                <p className="text-gray-400 text-sm mt-3">
+                  Multiplier: <span className="font-bold">x{multiplier}</span>
+                </p>
               </div>
             </GlassCard>
 
             <GlassCard>
               <h3 className="text-lg font-bold text-white mb-4">Karma Stats</h3>
               <div className="space-y-4">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Karma Balance</span>
-                  <span className="font-bold text-white">{userData.karmaBalance}</span>
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-gray-400">Karma Balance</span>
+                    <span className="font-bold text-white">{karmaBalance}</span>
+                  </div>
+                  <div className="w-full bg-gray-700 rounded-full h-2">
+                    <div 
+                      className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full" 
+                      style={{ width: `${Math.min(100, (karmaBalance / 1000) * 100)}%` }}
+                    ></div>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Staked Amount</span>
-                  <span className="font-bold text-white">{userData.stakeAmount} XLM</span>
+                
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-gray-400">Staked Amount</span>
+                    <span className="font-bold text-white">{stakeAmount} XLM</span>
+                  </div>
+                  <div className="w-full bg-gray-700 rounded-full h-2">
+                    <div 
+                      className="bg-gradient-to-r from-blue-500 to-cyan-500 h-2 rounded-full" 
+                      style={{ width: `${Math.min(100, (stakeAmount / 500) * 100)}%` }}
+                    ></div>
+                  </div>
                 </div>
+                
                 <div className="flex justify-between">
                   <span className="text-gray-400">Multiplier</span>
-                  <span className="font-bold text-white">x{userData.multiplier}</span>
+                  <span className="font-bold text-white">x{multiplier}</span>
                 </div>
+              </div>
+            </GlassCard>
+
+            {/* Wallet Section */}
+            <GlassCard>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-bold text-white">Wallets</h3>
+                <button 
+                  onClick={handleConnectWallet}
+                  disabled={isConnectingWallet}
+                  className="text-sm px-3 py-1 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-medium transition-all disabled:opacity-50"
+                >
+                  {isConnectingWallet ? 'Connecting...' : 'Add Wallet'}
+                </button>
+              </div>
+              
+              {walletConnectionError && (
+                <div className="mb-4 p-3 bg-red-900/50 border border-red-700 rounded-lg text-red-200 text-sm">
+                  {walletConnectionError}
+                </div>
+              )}
+              
+              <div className="space-y-3">
+                {connectedWallets.map((wallet) => (
+                  <div 
+                    key={wallet.id} 
+                    className={`p-3 rounded-lg border ${wallet.type === 'primary' ? 'border-purple-500/50 bg-purple-900/20' : 'border-gray-700 bg-gray-800/30'}`}
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-white">{wallet.name}</span>
+                          {wallet.type === 'primary' && (
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300">Primary</span>
+                          )}
+                        </div>
+                        <p className="text-xs font-mono text-gray-400 mt-1 truncate">{wallet.address}</p>
+                      </div>
+                      <span className="text-sm font-medium text-white">{wallet.balance}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-4 pt-4 border-t border-gray-800">
+                <button 
+                  onClick={logout}
+                  className="w-full py-2 text-center text-sm rounded-lg border border-red-500/30 text-red-400 hover:bg-red-900/20 transition-colors"
+                >
+                  Disconnect All Wallets
+                </button>
               </div>
             </GlassCard>
           </div>
@@ -218,7 +317,7 @@ export default function Profile() {
                       />
                     ) : (
                       <div className="w-full px-4 py-3 rounded-lg bg-slate-800/50 border border-gray-700 text-white">
-                        {user.name || 'Not set'}
+                        {userData.name || 'Not set'}
                       </div>
                     )}
                   </div>
@@ -235,7 +334,7 @@ export default function Profile() {
                       />
                     ) : (
                       <div className="w-full px-4 py-3 rounded-lg bg-slate-800/50 border border-gray-700 text-white">
-                        {user.email || 'Not set'}
+                        {userData.email || 'Not set'}
                       </div>
                     )}
                   </div>
@@ -252,7 +351,7 @@ export default function Profile() {
                       />
                     ) : (
                       <div className="w-full px-4 py-3 rounded-lg bg-slate-800/50 border border-gray-700 text-white">
-                        {user.dateOfBirth ? new Date(user.dateOfBirth).toLocaleDateString() : 'Not set'}
+                        {userData.dateOfBirth ? new Date(userData.dateOfBirth).toLocaleDateString() : 'Not set'}
                       </div>
                     )}
                   </div>
@@ -300,9 +399,9 @@ export default function Profile() {
                     </div>
                   ) : (
                     <div className="flex items-center gap-3">
-                      {user.socialMedia?.instagram && (
+                      {userData.socialMedia?.instagram && (
                         <a
-                          href={`https://instagram.com/${user.socialMedia.instagram.replace('@', '')}`}
+                          href={`https://instagram.com/${userData.socialMedia.instagram.replace('@', '')}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center hover:scale-110 transition-transform"
@@ -313,9 +412,9 @@ export default function Profile() {
                           </svg>
                         </a>
                       )}
-                      {user.socialMedia?.facebook && (
+                      {userData.socialMedia?.facebook && (
                         <a
-                          href={`https://facebook.com/${user.socialMedia.facebook}`}
+                          href={`https://facebook.com/${userData.socialMedia.facebook}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center hover:scale-110 transition-transform"
@@ -326,9 +425,9 @@ export default function Profile() {
                           </svg>
                         </a>
                       )}
-                      {user.socialMedia?.twitter && (
+                      {userData.socialMedia?.twitter && (
                         <a
-                          href={`https://twitter.com/${user.socialMedia.twitter.replace('@', '')}`}
+                          href={`https://twitter.com/${userData.socialMedia.twitter.replace('@', '')}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="w-10 h-10 bg-black rounded-lg flex items-center justify-center hover:scale-110 transition-transform"
@@ -339,7 +438,7 @@ export default function Profile() {
                           </svg>
                         </a>
                       )}
-                      {!user.socialMedia?.instagram && !user.socialMedia?.facebook && !user.socialMedia?.twitter && (
+                      {!userData.socialMedia?.instagram && !userData.socialMedia?.facebook && !userData.socialMedia?.twitter && (
                         <p className="text-gray-400 text-sm">No social media accounts linked</p>
                       )}
                     </div>
@@ -350,12 +449,30 @@ export default function Profile() {
                   <div className="pt-4 border-t border-gray-800">
                     <h4 className="text-md font-bold text-white mb-4">Wallet Information</h4>
                     <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-                      <p className="text-sm text-gray-400 mb-1">Wallet Address</p>
+                      <p className="text-sm text-gray-400 mb-1">Primary Wallet Address</p>
                       <p className="font-mono text-sm break-all text-gray-300">{userData.walletAddress}</p>
                     </div>
                   </div>
                 )}
               </form>
+            </GlassCard>
+            
+            {/* Additional Features Card */}
+            <GlassCard className="mt-6">
+              <h3 className="text-lg font-bold text-white mb-4">Account Settings</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-4 rounded-lg bg-gray-800/30 border border-gray-700">
+                  <h4 className="font-medium text-white mb-2">Notifications</h4>
+                  <p className="text-sm text-gray-400 mb-3">Manage your notification preferences</p>
+                  <button className="text-sm text-purple-400 hover:text-purple-300">Configure</button>
+                </div>
+                
+                <div className="p-4 rounded-lg bg-gray-800/30 border border-gray-700">
+                  <h4 className="font-medium text-white mb-2">Security</h4>
+                  <p className="text-sm text-gray-400 mb-3">Update your password and security settings</p>
+                  <button className="text-sm text-purple-400 hover:text-purple-300">Manage</button>
+                </div>
+              </div>
             </GlassCard>
           </div>
         </div>

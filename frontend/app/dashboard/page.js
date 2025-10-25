@@ -74,24 +74,7 @@ export default function Dashboard() {
           <div className="flex items-center space-x-4">
             <TierIndicator tier={userData.tier} stakeAmount={userData.stakeAmount} />
           </div>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {stats.map((stat, index) => (
-            <motion.div
-              key={stat.name}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-            >
-              <GlassCard>
-                <h3 className="text-gray-400 text-sm font-medium">{stat.name}</h3>
-                <p className="text-2xl font-bold text-white mt-1">{stat.value}</p>
-              </GlassCard>
-            </motion.div>
-          ))}
-        </div>
+        </div>        
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
