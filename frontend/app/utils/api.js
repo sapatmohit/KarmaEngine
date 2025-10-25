@@ -1,6 +1,6 @@
 // API utility functions for KarmaChain frontend
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 // User API functions
 export const userAPI = {
@@ -22,6 +22,10 @@ export const userAPI = {
       return await response.json();
     } catch (error) {
       console.error('Error registering user:', error);
+      // More specific error handling for network issues
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error('Network error: Unable to connect to the server. Please check if the backend is running.');
+      }
       throw error;
     }
   },

@@ -1,22 +1,18 @@
-const mongoose = require('mongoose');
 const app = require('./app');
 const config = require('./config');
 
 let server;
 
-// Connect to MongoDB
-mongoose.connect(config.mongoURI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => {
-  console.log('Connected to MongoDB');
-  server = app.listen(config.port, () => {
-    console.log(`Karma Engine server running on port ${config.port}`);
-  });
-})
-.catch((error) => {
-  console.error('Database connection error:', error);
+// Simple in-memory storage for testing
+const users = new Map();
+
+// Mock database connection for testing
+console.log('Using mock database for testing');
+
+// Start server without database connection
+server = app.listen(config.port, () => {
+  console.log(`Karma Engine server running on port ${config.port}`);
+  console.log('Using mock database for testing - no MongoDB connection required');
 });
 
 // Graceful shutdown

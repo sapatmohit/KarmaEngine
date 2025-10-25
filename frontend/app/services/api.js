@@ -26,6 +26,10 @@ class ApiService {
       return data;
     } catch (error) {
       console.error('API Error:', error);
+      // More specific error handling for network issues
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error('Network error: Unable to connect to the server. Please check if the backend is running on ' + this.baseURL);
+      }
       throw error;
     }
   }

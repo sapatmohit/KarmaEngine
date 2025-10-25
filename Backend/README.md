@@ -133,3 +133,27 @@ Handles all interactions with smart contracts:
    ```
 
 The server will start on port 3000 (or the port specified in your .env file).
+
+## Troubleshooting Network Issues
+
+If you encounter "Network error: Client Exception with socketexception" or similar connection errors:
+
+1. **Verify the server is running**:
+   - Look for "Karma Engine server running on port 3000" message in the terminal
+   - Check that no other process is using the same port
+
+2. **Check port configuration**:
+   - Ensure frontend clients are configured to connect to the correct port
+   - Default is port 3000
+
+3. **Test connectivity**:
+   ```bash
+   curl http://localhost:3000/users/test-wallet
+   ```
+   This should return a "User not found" response rather than a connection error.
+
+4. **Firewall and network issues**:
+   - Check if Windows Firewall is blocking the connection
+   - Ensure no antivirus software is interfering
+
+For more detailed troubleshooting steps, see the NETWORK_TROUBLESHOOTING.md file in the project root.
