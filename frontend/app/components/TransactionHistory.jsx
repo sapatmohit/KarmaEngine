@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 
 const TransactionHistory = () => {
   const [activeTab, setActiveTab] = useState('transactions');
+  const [copiedId, setCopiedId] = useState(null);
 
   // Mock transaction data with karma activity types
   const transactions = [
@@ -15,7 +15,8 @@ const TransactionHistory = () => {
       karmaAmount: '5.0',
       network: 'Instagram',
       xlmAmount: '0.5',
-      transactionId: '0xaFE1...671A'
+      transactionId: '0xaFE1...671A',
+      fullTransactionHash: 'aFE1b2c3d4e5f6789012345678901234567890abcd671A'
     },
     {
       id: 2,
@@ -24,7 +25,8 @@ const TransactionHistory = () => {
       karmaAmount: '3.0',
       network: 'Facebook',
       xlmAmount: '0.3',
-      transactionId: '0xeCa2...6456'
+      transactionId: '0xeCa2...6456',
+      fullTransactionHash: 'eCa2b3c4d5e6f789012345678901234567890abcde6456'
     },
     {
       id: 3,
@@ -33,7 +35,8 @@ const TransactionHistory = () => {
       karmaAmount: '1.0',
       network: 'Twitter',
       xlmAmount: '0.1',
-      transactionId: '0x73ad...5805'
+      transactionId: '0x73ad...5805',
+      fullTransactionHash: '73adc4d5e6f789012345678901234567890abcdef5805'
     },
     {
       id: 4,
@@ -42,7 +45,8 @@ const TransactionHistory = () => {
       karmaAmount: '2.0',
       network: 'Instagram',
       xlmAmount: '0.2',
-      transactionId: '0xe9Fb...b442'
+      transactionId: '0xe9Fb...b442',
+      fullTransactionHash: 'e9Fbc5d6e7f890123456789012345678901bcdefgb442'
     },
     {
       id: 5,
@@ -51,7 +55,8 @@ const TransactionHistory = () => {
       karmaAmount: '-5.0',
       network: 'Facebook',
       xlmAmount: '-0.5',
-      transactionId: '0xC5cE...77E0'
+      transactionId: '0xC5cE...77E0',
+      fullTransactionHash: 'C5cEd6e7f890123456789012345678901cdefgh77E0'
     },
     {
       id: 6,
@@ -60,7 +65,8 @@ const TransactionHistory = () => {
       karmaAmount: '4.5',
       network: 'Twitter',
       xlmAmount: '0.45',
-      transactionId: '0x9B2f...3A1C'
+      transactionId: '0x9B2f...3A1C',
+      fullTransactionHash: '9B2fe7f890123456789012345678901defghij3A1C'
     },
     {
       id: 7,
@@ -69,7 +75,8 @@ const TransactionHistory = () => {
       karmaAmount: '2.5',
       network: 'Instagram',
       xlmAmount: '0.25',
-      transactionId: '0x4D7e...8F9B'
+      transactionId: '0x4D7e...8F9B',
+      fullTransactionHash: '4D7ef890123456789012345678901efghijk8F9B'
     },
     {
       id: 8,
@@ -78,7 +85,8 @@ const TransactionHistory = () => {
       karmaAmount: '1.5',
       network: 'Facebook',
       xlmAmount: '0.15',
-      transactionId: '0x2A8c...6E3D'
+      transactionId: '0x2A8c...6E3D',
+      fullTransactionHash: '2A8cf90123456789012345678901fghijkl6E3D'
     }
   ];
 
@@ -163,6 +171,30 @@ const TransactionHistory = () => {
     }
   };
 
+  const handleTransactionClick = (transactionHash) => {
+    const stellarExplorerUrl = `https://stellar.expert/explorer/testnet/tx/${transactionHash}`;
+    window.open(stellarExplorerUrl, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleCopyTransactionId = async (transactionHash, transactionId) => {
+    try {
+      await navigator.clipboard.writeText(transactionHash);
+      setCopiedId(transactionId);
+      setTimeout(() => setCopiedId(null), 2000); // Reset after 2 seconds
+    } catch (err) {
+      console.error('Failed to copy transaction ID:', err);
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = transactionHash;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setCopiedId(transactionId);
+      setTimeout(() => setCopiedId(null), 2000);
+    }
+  };
+
   return (
     <div className="bg-gray-900/50 backdrop-blur-md border border-gray-800 rounded-2xl p-6">
       {/* Tabs */}
@@ -205,11 +237,8 @@ const TransactionHistory = () => {
           </thead>
           <tbody>
             {transactions.map((transaction) => (
-              <motion.tr
+              <tr
                 key={transaction.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: transaction.id * 0.1 }}
                 className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors"
               >
                 <td className="py-3 px-2 text-sm text-gray-300">{transaction.time}</td>
@@ -227,8 +256,46 @@ const TransactionHistory = () => {
                   </div>
                 </td>
                 <td className="py-3 px-2 text-sm text-white">{transaction.xlmAmount}</td>
-                <td className="py-3 px-2 text-sm text-gray-400 font-mono">{transaction.transactionId}</td>
-              </motion.tr>
+                <td className="py-3 px-2 text-sm">
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => handleTransactionClick(transaction.fullTransactionHash)}
+                      className="flex items-center space-x-1 text-gray-400 hover:text-blue-400 font-mono transition-colors group"
+                      title="View on Stellar Explorer"
+                    >
+                      <span>{transaction.transactionId}</span>
+                      <svg 
+                        className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round" 
+                          strokeWidth={2} 
+                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" 
+                        />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => handleCopyTransactionId(transaction.fullTransactionHash, transaction.transactionId)}
+                      className="p-1 text-gray-500 hover:text-green-400 transition-colors group"
+                      title="Copy transaction ID"
+                    >
+                      {copiedId === transaction.transactionId ? (
+                        <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      ) : (
+                        <svg className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                </td>
+              </tr>
             ))}
           </tbody>
         </table>
