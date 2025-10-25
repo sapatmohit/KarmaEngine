@@ -44,6 +44,7 @@ src/
 
 - `POST /api/staking/stake` - Stake tokens
 - `POST /api/staking/unstake` - Unstake tokens
+- `POST /api/staking/redeem` - Redeem karma points for XLM tokens
 - `GET /api/staking/:walletAddress` - Get user staking records
 
 ### Karma
@@ -106,6 +107,7 @@ Handles all interactions with smart contracts:
 - User registration on blockchain
 - Karma point updates
 - Token staking/unstaking
+- Karma point redemption for XLM tokens
 - Balance queries
 
 ## Setup

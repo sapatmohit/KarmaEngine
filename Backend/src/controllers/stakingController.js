@@ -1,6 +1,6 @@
 const Staking = require('../models/Staking');
 const User = require('../models/User');
-const { stakeTokens, unstakeTokens } = require('../services/blockchainService');
+const { stakeTokens, unstakeTokens, redeemKarmaForXLM } = require('../services/blockchainService');
 
 // Multiplier tiers based on staked amount
 const MULTIPLIER_TIERS = [
@@ -177,8 +177,65 @@ const getUserStakingRecords = async (req, res) => {
   }
 };
 
+/**
+ * Redeem karma points for XLM tokens
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const redeemKarmaController = async (req, res) => {
+  try {
+    const { walletAddress, karmaPoints } = req.body;
+
+    // Validate input
+    if (!walletAddress || !karmaPoints) {
+      return res.status(400).json({ message: 'Wallet address and karma points are required' });
+    }
+
+    if (karmaPoints <= 0) {
+      return res.status(400).json({ message: 'Karma points must be greater than zero' });
+    }
+
+    // Find user
+    const user = await User.findOne({ walletAddress });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Check if user has enough karma points
+    if (user.karmaPoints < karmaPoints) {
+      return res.status(400).json({ message: 'Insufficient karma points' });
+    }
+
+    // Redeem karma points on blockchain (placeholder)
+    const blockchainResult = await redeemKarmaForXLM(walletAddress, karmaPoints);
+
+    // Update user's karma points
+    user.karmaPoints -= karmaPoints;
+    user.lastActivity = Date.now();
+    await user.save();
+
+    res.status(200).json({
+      message: 'Karma points redeemed successfully',
+      redeemed: {
+        karmaPoints: karmaPoints,
+        xlmTokens: blockchainResult.xlmTokensReceived,
+        transactionHash: blockchainResult.transactionHash
+      },
+      user: {
+        walletAddress: user.walletAddress,
+        remainingKarmaPoints: user.karmaPoints
+      },
+      blockchainResult
+    });
+  } catch (error) {
+    console.error('Redeem error:', error);
+    res.status(500).json({ message: 'Server error during redemption' });
+  }
+};
+
 module.exports = {
   stakeTokensController,
   unstakeTokensController,
-  getUserStakingRecords
+  getUserStakingRecords,
+  redeemKarmaController
 };

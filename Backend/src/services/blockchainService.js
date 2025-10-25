@@ -166,11 +166,45 @@ const getStakingInfo = async (walletAddress) => {
   };
 };
 
+/**
+ * Redeem karma points for XLM tokens
+ * @param {string} walletAddress - User's wallet address
+ * @param {number} karmaPoints - Amount of karma points to redeem
+ * @returns {Object} - Blockchain transaction result
+ */
+const redeemKarmaForXLM = async (walletAddress, karmaPoints) => {
+  // Placeholder implementation
+  // In a real implementation, this would:
+  // 1. Connect to the blockchain network
+  // 2. Initialize the contract with ABI and address
+  // 3. Call the redeemKarma function on the smart contract
+  // 4. Return the transaction result
+  
+  console.log(`Redeeming ${karmaPoints} karma points for XLM tokens for user ${walletAddress}`);
+  
+  // Simulate blockchain interaction delay
+  await new Promise(resolve => setTimeout(resolve, 100));
+  
+  // Calculate XLM tokens based on karma points
+  // This is a placeholder ratio - in reality, this would be determined by the smart contract
+  const xlmTokens = karmaPoints * 0.1;
+  
+  return {
+    status: 'success',
+    transactionHash: '0x' + Math.random().toString(36).substring(2, 15),
+    blockNumber: Math.floor(Math.random() * 1000000),
+    gasUsed: Math.floor(Math.random() * 50000),
+    karmaPointsRedeemed: karmaPoints,
+    xlmTokensReceived: xlmTokens
+  };
+};
+
 module.exports = {
   registerUserOnBlockchain,
   updateKarmaOnBlockchain,
   stakeTokens,
   unstakeTokens,
   getKarmaBalance,
-  getStakingInfo
+  getStakingInfo,
+  redeemKarmaForXLM
 };
