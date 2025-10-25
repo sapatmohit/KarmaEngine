@@ -14,7 +14,7 @@ const testUser = {
   twitter: "testuser"
 };
 
-const baseURL = 'http://localhost:3000/api';
+const baseURL = 'http://localhost:3000';
 
 async function testBackend() {
   console.log('Testing Karma Engine Backend...\n');

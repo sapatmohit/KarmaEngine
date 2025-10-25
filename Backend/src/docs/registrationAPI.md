@@ -2,7 +2,7 @@
 
 ## Endpoint
 
-**POST** `/api/users/register`
+**POST** `/users/register`
 
 ## Request Body
 

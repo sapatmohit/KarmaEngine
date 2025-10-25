@@ -30,28 +30,28 @@ src/
 
 ### User Management
 
-- `POST /api/users/register` - Register a new user
-- `GET /api/users/:walletAddress` - Get user by wallet address
-- `PUT /api/users/:walletAddress/karma` - Update user karma points
+- `POST /users/register` - Register a new user
+- `GET /users/:walletAddress` - Get user by wallet address
+- `PUT /users/:walletAddress/karma` - Update user karma points
 
 ### Activity Tracking
 
-- `POST /api/activities` - Record a new activity
-- `GET /api/activities/:walletAddress` - Get user activities
-- `GET /api/activities/:walletAddress/stats` - Get activity statistics
+- `POST /activities` - Record a new activity
+- `GET /activities/:walletAddress` - Get user activities
+- `GET /activities/:walletAddress/stats` - Get activity statistics
 
 ### Staking
 
-- `POST /api/staking/stake` - Stake tokens
-- `POST /api/staking/unstake` - Unstake tokens
-- `POST /api/staking/redeem` - Redeem karma points for XLM tokens
-- `GET /api/staking/:walletAddress` - Get user staking records
+- `POST /staking/stake` - Stake tokens
+- `POST /staking/unstake` - Unstake tokens
+- `POST /staking/redeem` - Redeem karma points for XLM tokens
+- `GET /staking/:walletAddress` - Get user staking records
 
 ### Karma
 
-- `GET /api/karma/balance/:walletAddress` - Get user's karma balance
-- `POST /api/karma/sync/:walletAddress` - Sync user's karma between database and blockchain
-- `GET /api/karma/leaderboard` - Get leaderboard
+- `GET /karma/balance/:walletAddress` - Get user's karma balance
+- `POST /karma/sync/:walletAddress` - Sync user's karma between database and blockchain
+- `GET /karma/leaderboard` - Get leaderboard
 
 ## Database Models
 

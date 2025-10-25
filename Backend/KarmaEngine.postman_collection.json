@@ -20,14 +20,13 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:3000/api/users/register",
+					"raw": "http://localhost:3000/users/register",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "3000",
 					"path": [
-						"api",
 						"users",
 						"register"
 					]
@@ -41,14 +40,13 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:3000/api/users/0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+					"raw": "http://localhost:3000/users/0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "3000",
 					"path": [
-						"api",
 						"users",
 						"0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
 					]
@@ -71,14 +69,13 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:3000/api/activities",
+					"raw": "http://localhost:3000/activities",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "3000",
 					"path": [
-						"api",
 						"activities"
 					]
 				}
@@ -91,14 +88,13 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:3000/api/activities/0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+					"raw": "http://localhost:3000/activities/0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "3000",
 					"path": [
-						"api",
 						"activities",
 						"0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
 					]
@@ -121,14 +117,13 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:3000/api/staking/stake",
+					"raw": "http://localhost:3000/staking/stake",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "3000",
 					"path": [
-						"api",
 						"staking",
 						"stake"
 					]
@@ -151,14 +146,13 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:3000/api/staking/unstake",
+					"raw": "http://localhost:3000/staking/unstake",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "3000",
 					"path": [
-						"api",
 						"staking",
 						"unstake"
 					]
@@ -181,14 +175,13 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:3000/api/staking/redeem",
+					"raw": "http://localhost:3000/staking/redeem",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "3000",
 					"path": [
-						"api",
 						"staking",
 						"redeem"
 					]
@@ -202,14 +195,13 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:3000/api/staking/0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+					"raw": "http://localhost:3000/staking/0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "3000",
 					"path": [
-						"api",
 						"staking",
 						"0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
 					]
@@ -223,14 +215,13 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:3000/api/karma/balance/0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+					"raw": "http://localhost:3000/karma/balance/0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "3000",
 					"path": [
-						"api",
 						"karma",
 						"balance",
 						"0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
@@ -245,14 +236,13 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:3000/api/karma/sync/0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+					"raw": "http://localhost:3000/karma/sync/0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "3000",
 					"path": [
-						"api",
 						"karma",
 						"sync",
 						"0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
@@ -267,14 +257,13 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:3000/api/karma/leaderboard",
+					"raw": "http://localhost:3000/karma/leaderboard",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "3000",
 					"path": [
-						"api",
 						"karma",
 						"leaderboard"
 					]

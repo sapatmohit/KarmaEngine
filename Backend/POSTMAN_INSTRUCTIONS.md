@@ -48,7 +48,7 @@ You can create an environment in Postman to easily switch between different serv
 
 ### 1. User Registration
 
-**Endpoint**: POST `/api/users/register`
+**Endpoint**: POST `/users/register`
 
 This is the first endpoint you should test. It registers a new user with all required information.
 
@@ -88,13 +88,13 @@ This is the first endpoint you should test. It registers a new user with all req
 
 ### 2. Get User by Wallet Address
 
-**Endpoint**: GET `/api/users/{walletAddress}`
+**Endpoint**: GET `/users/{walletAddress}`
 
 After registering a user, you can retrieve their information using this endpoint.
 
 ### 3. Record Activity
 
-**Endpoint**: POST `/api/activities`
+**Endpoint**: POST `/activities`
 
 Record user activities like posts, comments, likes, etc.
 
@@ -111,22 +111,22 @@ Record user activities like posts, comments, likes, etc.
 
 ### 4. Get User Activities
 
-**Endpoint**: GET `/api/activities/{walletAddress}`
+**Endpoint**: GET `/activities/{walletAddress}`
 
 Retrieve a user's activity history.
 
 ### 5. Staking Operations
 
-**Stake Tokens**: POST `/api/staking/stake`
-**Unstake Tokens**: POST `/api/staking/unstake`
-**Redeem Karma for XLM**: POST `/api/staking/redeem`
-**Get Staking Records**: GET `/api/staking/{walletAddress}`
+**Stake Tokens**: POST `/staking/stake`
+**Unstake Tokens**: POST `/staking/unstake`
+**Redeem Karma for XLM**: POST `/staking/redeem`
+**Get Staking Records**: GET `/staking/{walletAddress}`
 
 ### 6. Karma Operations
 
-**Get Karma Balance**: GET `/api/karma/balance/{walletAddress}`
-**Sync Karma**: POST `/api/karma/sync/{walletAddress}`
-**Get Leaderboard**: GET `/api/karma/leaderboard`
+**Get Karma Balance**: GET `/karma/balance/{walletAddress}`
+**Sync Karma**: POST `/karma/sync/{walletAddress}`
+**Get Leaderboard**: GET `/karma/leaderboard`
 
 ## Testing Different Scenarios
 

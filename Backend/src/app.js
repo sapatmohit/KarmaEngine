@@ -23,10 +23,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-app.use('/api/users', userRoutes);
-app.use('/api/activities', activityRoutes);
-app.use('/api/staking', stakingRoutes);
-app.use('/api/karma', karmaRoutes);
+app.use('/users', userRoutes);
+app.use('/activities', activityRoutes);
+app.use('/staking', stakingRoutes);
+app.use('/karma', karmaRoutes);
 
 // Error handling middleware
 app.use(errorHandler);

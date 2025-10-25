@@ -2,7 +2,7 @@
 
 ## Endpoint
 
-**POST** `/api/staking/redeem`
+**POST** `/staking/redeem`
 
 ## Description
 
