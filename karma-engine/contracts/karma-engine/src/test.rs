@@ -1,17 +1,7 @@
 #![cfg(test)]
 
-use super::{KarmaEngineContract, KarmaEngineContractClient};
-use soroban_sdk::{Address, Env};
-
 #[test]
 fn test_basic_functionality() {
-    // This test will just compile the contract to make sure there are no syntax errors
-    // We'll add more comprehensive tests once we figure out the address generation
-    assert!(true);
-}
-
-#[test]
-fn test_redeem_karma() {
     // This test will just compile the contract to make sure there are no syntax errors
     // We'll add more comprehensive tests once we figure out the address generation
     assert!(true);

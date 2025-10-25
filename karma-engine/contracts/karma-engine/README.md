@@ -26,6 +26,9 @@ Users can now convert their accumulated Karma points into XLM tokens on the Stel
 - Activity recording and history tracking
 - Tiered staking system (Regular, Trusted, Influencer)
 - **NEW**: Redeemable karma points for XLM tokens
+- **NEW**: Limited activity history (last 20 activities)
+- **NEW**: Admin-only contract management features
+- **NEW**: Normalized staking tiers to prevent whale dominance
 
 ## Contract Functions
 
@@ -54,22 +57,46 @@ Users can now convert their accumulated Karma points into XLM tokens on the Stel
 
 - `redeem_karma(user, karma_amount)`: Convert karma points to XLM tokens
 - `get_xlm_token()`: Get the XLM token contract address
+- `get_karma_rate()`: Get the current karma to XLM conversion rate
 
 ### Activity History
 
-- `get_activities(user)`: Get a user's activity history
+- `get_activities(user)`: Get a user's activity history (limited to last 20 activities)
+
+### Admin Functions
+
+- `set_paused(admin, paused)`: Pause/unpause the contract (admin only)
+- `set_karma_rate(admin, rate)`: Adjust the karma to XLM conversion rate (admin only)
+- `reset_user(admin, user)`: Reset a user's karma and stake (admin only, for testing)
+- `is_paused()`: Check if contract is paused
 
 ## Staking Tiers
 
 - **Regular User**: 0-100 tokens staked (1.0x multiplier)
 - **Trusted Contributor**: 100-500 tokens staked (1.5x multiplier)
-- **Influencer**: 500+ tokens staked (2.0x multiplier)
+- **Influencer**: 500+ tokens staked (2x multiplier with logarithmic scaling)
+
+### Normalized Staking
+
+To prevent whale dominance and ensure fair participation:
+
+- For stakes above 500 tokens, logarithmic scaling is applied
+- Multiplier increases gradually with stake size but is capped at 5x
+- This ensures new users can scale linearly while preventing excessive influence from large stakeholders
+
+## Activity History Limit
+
+To maintain contract efficiency in production:
+
+- Only the last 20 activities per user are stored on-chain
+- Older activities are automatically removed when the limit is reached
+- This prevents unbounded growth of storage requirements
 
 ## Redeemable Karma
 
 Users can convert their accumulated Karma points into XLM tokens at a rate of 10 Karma points = 1 XLM.
 
-### How it works:
+### How it works
 
 1. Users accumulate Karma points through social activities
 2. Users can redeem their Karma points for XLM tokens
@@ -78,9 +105,32 @@ Users can convert their accumulated Karma points into XLM tokens at a rate of 10
 
 ### Conversion Rate
 
-- 10 Karma points = 1 XLM token
+- Default rate: 10 Karma points = 1 XLM token
+- Admin can adjust the conversion rate as needed
 - Minimum redemption: 10 Karma points (1 XLM)
 - No maximum limit on redemptions
+
+## Admin Features
+
+Contract owner has special administrative privileges:
+
+### Emergency Pause
+
+- Ability to pause all contract functions in case of emergency
+- Prevents all user interactions when paused
+- Can be unpaused by admin when issue is resolved
+
+### Rate Adjustment
+
+- Ability to adjust the karma to XLM conversion rate
+- Useful for market adjustments or testing
+- Rate must be a positive value
+
+### User Reset
+
+- Ability to reset any user's karma and stake to zero
+- Useful for testing or handling compromised accounts
+- Only available to contract owner
 
 ## Prerequisites
 
@@ -230,6 +280,40 @@ soroban contract invoke \
   --karma_amount 100
 ```
 
+### Admin Functions
+
+```bash
+# Pause the contract (admin only)
+soroban contract invoke \
+  --id CONTRACT_ID \
+  --source ACCOUNT_SECRET_KEY \
+  --rpc-url https://soroban-testnet.stellar.org:443 \
+  --network-passphrase "Test SDF Network ; September 2015" \
+  -- set_paused \
+  --admin ADMIN_PUBLIC_KEY \
+  --paused true
+
+# Adjust karma conversion rate (admin only)
+soroban contract invoke \
+  --id CONTRACT_ID \
+  --source ACCOUNT_SECRET_KEY \
+  --rpc-url https://soroban-testnet.stellar.org:443 \
+  --network-passphrase "Test SDF Network ; September 2015" \
+  -- set_karma_rate \
+  --admin ADMIN_PUBLIC_KEY \
+  --rate 5
+
+# Reset user state (admin only)
+soroban contract invoke \
+  --id CONTRACT_ID \
+  --source ACCOUNT_SECRET_KEY \
+  --rpc-url https://soroban-testnet.stellar.org:443 \
+  --network-passphrase "Test SDF Network ; September 2015" \
+  -- reset_user \
+  --admin ADMIN_PUBLIC_KEY \
+  --user USER_PUBLIC_KEY
+```
+
 ### Query Functions
 
 ```bash
@@ -276,6 +360,22 @@ soroban contract invoke \
   --rpc-url https://soroban-testnet.stellar.org:443 \
   --network-passphrase "Test SDF Network ; September 2015" \
   -- get_xlm_token
+
+# Get current karma conversion rate
+soroban contract invoke \
+  --id CONTRACT_ID \
+  --source ACCOUNT_SECRET_KEY \
+  --rpc-url https://soroban-testnet.stellar.org:443 \
+  --network-passphrase "Test SDF Network ; September 2015" \
+  -- get_karma_rate
+
+# Check if contract is paused
+soroban contract invoke \
+  --id CONTRACT_ID \
+  --source ACCOUNT_SECRET_KEY \
+  --rpc-url https://soroban-testnet.stellar.org:443 \
+  --network-passphrase "Test SDF Network ; September 2015" \
+  -- is_paused
 ```
 
 ## Testing
@@ -304,6 +404,8 @@ karma-engine/
 - `3`: User not registered
 - `4`: User already registered
 - `5`: Insufficient karma
+- `6`: Unauthorized
+- `7`: Contract paused
 
 ## Future Enhancements
 
