@@ -72,6 +72,45 @@ export default function Home() {
               <RedeemInterface />
             </motion.div>
 
+            {/* Karma Trading Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.25 }}
+            >
+              <GlassCard>
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                  </div>
+                  <h2 className="text-xl font-bold">Karma Trading</h2>
+                </div>
+                <p className="text-gray-400 mb-4">
+                  Trade on others' karma growth! Buy and sell karma tokens based on user performance.
+                </p>
+                <div className="space-y-3">
+                  <a 
+                    href="/explore"
+                    className="block w-full bg-purple-600 hover:bg-purple-700 text-white text-center py-3 rounded-lg font-medium transition-colors"
+                  >
+                    Explore Karma Tokens
+                  </a>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="text-center p-2 bg-green-500/10 rounded-lg">
+                      <div className="text-green-400 font-semibold">+15.2%</div>
+                      <div className="text-xs text-gray-400">Top Gainer</div>
+                    </div>
+                    <div className="text-center p-2 bg-blue-500/10 rounded-lg">
+                      <div className="text-blue-400 font-semibold">$2.1M</div>
+                      <div className="text-xs text-gray-400">24h Volume</div>
+                    </div>
+                  </div>
+                </div>
+              </GlassCard>
+            </motion.div>
+
             {/* Recent Activities */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}

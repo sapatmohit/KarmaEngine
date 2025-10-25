@@ -10,8 +10,9 @@ const Navigation = () => {
   
   const navItems = [
     { name: 'Dashboard', path: '/' },
+    { name: 'Trade', path: '/explore' },
     { name: 'Track', path: '/activities' },
-    { name: 'Explore', path: '/leaderboard' },
+    { name: 'Leaderboard', path: '/leaderboard' },
     { name: 'Pool', path: '/staking' },
   ];
 

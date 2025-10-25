@@ -46,4 +46,18 @@ class ApiService {
 
   static Future<Response> getUserStakingRecords(String walletAddress) async =>
       await _dio.get('/staking/$walletAddress');
+
+  // Generic HTTP methods for trading
+  static Future<Response> get(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+  }) async =>
+      await _dio.get(path, queryParameters: queryParameters);
+
+  static Future<Response> post(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+  }) async =>
+      await _dio.post(path, data: data, queryParameters: queryParameters);
 }

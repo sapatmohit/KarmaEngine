@@ -3,6 +3,7 @@ import 'package:karma_engine_app/features/dashboard/presentation/screens/dashboa
 import 'package:karma_engine_app/features/activity/presentation/screens/activity_screen.dart';
 import 'package:karma_engine_app/features/leaderboard/presentation/screens/leaderboard_screen.dart';
 import 'package:karma_engine_app/features/wallet/presentation/screens/wallet_screen.dart';
+import 'package:karma_engine_app/features/trading/presentation/screens/explore_screen.dart';
 
 class MainLayout extends StatefulWidget {
   const MainLayout({super.key});
@@ -16,6 +17,7 @@ class _MainLayoutState extends State<MainLayout> {
 
   final List<Widget> _screens = const [
     DashboardScreen(),
+    ExploreScreen(),
     ActivityScreen(),
     LeaderboardScreen(),
     WalletScreen(),
@@ -34,6 +36,7 @@ class _MainLayoutState extends State<MainLayout> {
       },
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+        BottomNavigationBarItem(icon: Icon(Icons.explore), label: 'Trade'),
         BottomNavigationBarItem(icon: Icon(Icons.feed), label: 'Activity'),
         BottomNavigationBarItem(
           icon: Icon(Icons.leaderboard),
