@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, contractmeta, contracttype, Address, Env, Map, Vec, Symbol, String, symbol_short};
+use soroban_sdk::{contract, contractimpl, contractmeta, contracttype, Address, Env, Map, Vec, Symbol, symbol_short};
 use soroban_sdk::token::TokenClient;
 
 // Metadata for the contract
@@ -30,17 +30,25 @@ const DEFAULT_KARMA_TO_XLM_RATE: i128 = 10;
 // Maximum activity history to store per user
 const MAX_ACTIVITY_HISTORY: u32 = 20;
 
-// Error codes
+// Activity types
 #[contracttype]
-#[derive(Clone, Copy)]
-pub enum KarmaError {
-    InsufficientBalance = 1,
-    InvalidAmount = 2,
-    UserNotRegistered = 3,
-    AlreadyRegistered = 4,
-    InsufficientKarma = 5,
-    Unauthorized = 6,
-    ContractPaused = 7,
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum ActivityType {
+    Post,
+    Comment,
+    Like,
+    Repost,
+    Report,
+}
+
+// Event types
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum KarmaEvent {
+    KarmaUpdated(Address, i32), // User, new karma balance
+    KarmaRedeemed(Address, i128, i128), // User, karma amount, xlm amount
+    UserRegistered(Address),
+    ContractPaused(bool), // paused state
 }
 
 // Storage keys
@@ -64,7 +72,7 @@ pub struct UserData {
 #[contracttype]
 #[derive(Clone)]
 pub struct ActivityRecord {
-    pub activity_type: String,
+    pub activity_type: ActivityType,
     pub karma_change: i32,
     pub timestamp: u64,
 }
@@ -83,6 +91,9 @@ impl KarmaEngineContract {
         e.storage().instance().set(&KARMATOK, &xlm_token);
         e.storage().instance().set(&KARMART, &DEFAULT_KARMA_TO_XLM_RATE);
         e.storage().instance().set(&PAUSED, &false);
+        
+        // Emit event
+        e.events().publish((symbol_short!("init"),), owner);
     }
 
     /// Register a new user
@@ -108,8 +119,14 @@ impl KarmaEngineContract {
         
         // Also initialize their stake
         let mut stakes: Map<Address, i128> = e.storage().instance().get(&STAKES).unwrap_or_else(|| Map::new(&e));
-        stakes.set(user, 0);
+        stakes.set(user.clone(), 0);
         e.storage().instance().set(&STAKES, &stakes);
+        
+        // Emit event
+        e.events().publish((symbol_short!("reg"),), user.clone());
+        
+        // Emit UserRegistered event
+        e.events().publish((symbol_short!("user_reg"),), KarmaEvent::UserRegistered(user));
     }
 
     /// Get user karma points
@@ -146,8 +163,11 @@ impl KarmaEngineContract {
         // Update user's stake
         let mut stakes: Map<Address, i128> = e.storage().instance().get(&STAKES).unwrap_or_else(|| Map::new(&e));
         let current_stake = stakes.get(user.clone()).unwrap_or(0);
-        stakes.set(user, current_stake + amount);
+        stakes.set(user.clone(), current_stake + amount);
         e.storage().instance().set(&STAKES, &stakes);
+        
+        // Emit event
+        e.events().publish((symbol_short!("stake"),), (user.clone(), amount));
     }
 
     /// Withdraw staked tokens
@@ -173,6 +193,9 @@ impl KarmaEngineContract {
         // Transfer tokens back to user
         let token_client = TokenClient::new(&e, &token);
         token_client.transfer(&e.current_contract_address(), &user, &amount);
+        
+        // Emit event
+        e.events().publish((symbol_short!("unstake"),), (user.clone(), amount));
     }
 
     /// Record a post activity and update karma
@@ -182,7 +205,7 @@ impl KarmaEngineContract {
             panic!("Contract is paused");
         }
         
-        Self::record_activity(e.clone(), user, String::from_str(&e, "post"), POST_KARMA)
+        Self::record_activity(e.clone(), user, ActivityType::Post, POST_KARMA)
     }
 
     /// Record a comment activity and update karma
@@ -192,7 +215,7 @@ impl KarmaEngineContract {
             panic!("Contract is paused");
         }
         
-        Self::record_activity(e.clone(), user, String::from_str(&e, "comment"), COMMENT_KARMA)
+        Self::record_activity(e.clone(), user, ActivityType::Comment, COMMENT_KARMA)
     }
 
     /// Record a like activity and update karma
@@ -202,7 +225,7 @@ impl KarmaEngineContract {
             panic!("Contract is paused");
         }
         
-        Self::record_activity(e.clone(), user, String::from_str(&e, "like"), LIKE_KARMA)
+        Self::record_activity(e.clone(), user, ActivityType::Like, LIKE_KARMA)
     }
 
     /// Record a repost activity and update karma
@@ -212,7 +235,7 @@ impl KarmaEngineContract {
             panic!("Contract is paused");
         }
         
-        Self::record_activity(e.clone(), user, String::from_str(&e, "repost"), REPOST_KARMA)
+        Self::record_activity(e.clone(), user, ActivityType::Repost, REPOST_KARMA)
     }
 
     /// Record a report activity and update karma (negative)
@@ -222,10 +245,10 @@ impl KarmaEngineContract {
             panic!("Contract is paused");
         }
         
-        Self::record_activity(e.clone(), user, String::from_str(&e, "report"), REPORT_PENALTY)
+        Self::record_activity(e.clone(), user, ActivityType::Report, REPORT_PENALTY)
     }
 
-    /// Get user's activity history
+    /// Get user's activity history (newest first)
     pub fn get_activities(e: Env, user: Address) -> Vec<ActivityRecord> {
         let activities_store: Map<Address, Vec<ActivityRecord>> = e.storage().instance().get(&ACTIVITY).unwrap_or_else(|| Map::new(&e));
         activities_store.get(user).unwrap_or_else(|| Vec::new(&e))
@@ -275,11 +298,13 @@ impl KarmaEngineContract {
         // Calculate XLM amount using current conversion rate
         let karma_rate: i128 = e.storage().instance().get(&KARMART).unwrap_or(DEFAULT_KARMA_TO_XLM_RATE);
         let xlm_amount = (karma_amount as i128) / karma_rate;
+        let _leftover_karma = (karma_amount as i128) % karma_rate; // Track leftover karma for future use
+        
         if xlm_amount == 0 {
             panic!("Karma amount too small to redeem");
         }
         
-        // Deduct karma from user
+        // Deduct karma from user (including leftover karma that can't be converted)
         user_data.karma_points -= karma_amount;
         users.set(user.clone(), user_data);
         e.storage().instance().set(&USERS, &users);
@@ -288,6 +313,10 @@ impl KarmaEngineContract {
         let xlm_token: Address = e.storage().instance().get(&KARMATOK).unwrap();
         let token_client = TokenClient::new(&e, &xlm_token);
         token_client.transfer(&e.current_contract_address(), &user, &xlm_amount);
+        
+        // Emit events
+        e.events().publish((symbol_short!("redeem"),), (user.clone(), karma_amount, xlm_amount));
+        e.events().publish((symbol_short!("karma_red"),), KarmaEvent::KarmaRedeemed(user.clone(), karma_amount as i128, xlm_amount));
     }
 
     /// Get the XLM token contract address
@@ -305,6 +334,23 @@ impl KarmaEngineContract {
         e.storage().instance().get(&PAUSED).unwrap_or(false)
     }
 
+    /// Get the total karma of all users (for leaderboard)
+    pub fn total_karma(e: Env) -> i32 {
+        let users: Map<Address, UserData> = e.storage().instance().get(&USERS).unwrap_or_else(|| Map::new(&e));
+        let mut total = 0;
+        for user_data in users.values() {
+            total += user_data.karma_points;
+        }
+        total
+    }
+
+    /// Get how much XLM a user can redeem based on their current karma and rate
+    pub fn redeemable_balance(e: Env, user: Address) -> i128 {
+        let karma = Self::get_karma(e.clone(), user) as i128;
+        let karma_rate: i128 = e.storage().instance().get(&KARMART).unwrap_or(DEFAULT_KARMA_TO_XLM_RATE);
+        karma / karma_rate
+    }
+
     /// ADMIN FUNCTIONS ///
 
     /// Pause/unpause the contract (admin only)
@@ -317,6 +363,10 @@ impl KarmaEngineContract {
         }
         
         e.storage().instance().set(&PAUSED, &paused);
+        
+        // Emit events
+        e.events().publish((symbol_short!("pause"),), paused);
+        e.events().publish((symbol_short!("con_pause"),), KarmaEvent::ContractPaused(paused));
     }
 
     /// Adjust the karma to XLM conversion rate (admin only)
@@ -329,10 +379,13 @@ impl KarmaEngineContract {
         }
         
         if rate <= 0 {
-            panic!("Invalid rate");
+            panic!("Bad rate");
         }
         
         e.storage().instance().set(&KARMART, &rate);
+        
+        // Emit event
+        e.events().publish((symbol_short!("rate"),), rate);
     }
 
     /// Reset a user's karma and stake (admin only, for testing)
@@ -355,12 +408,15 @@ impl KarmaEngineContract {
         
         // Reset user's stake
         let mut stakes: Map<Address, i128> = e.storage().instance().get(&STAKES).unwrap_or_else(|| Map::new(&e));
-        stakes.set(user, 0);
+        stakes.set(user.clone(), 0);
         e.storage().instance().set(&STAKES, &stakes);
+        
+        // Emit event
+        e.events().publish((symbol_short!("reset"),), user);
     }
 
     /// Internal function to record any activity and update karma
-    fn record_activity(e: Env, user: Address, activity_type: String, base_karma: i32) -> i32 {
+    fn record_activity(e: Env, user: Address, activity_type: ActivityType, base_karma: i32) -> i32 {
         // Check if user is registered
         let mut users: Map<Address, UserData> = e.storage().instance().get(&USERS).unwrap_or_else(|| Map::new(&e));
         
@@ -375,7 +431,8 @@ impl KarmaEngineContract {
         
         // Update user's karma
         let mut user_data = users.get(user.clone()).unwrap();
-        user_data.karma_points += karma_change;
+        let karma_points = user_data.karma_points + karma_change;
+        user_data.karma_points = karma_points;
         users.set(user.clone(), user_data);
         e.storage().instance().set(&USERS, &users);
         
@@ -389,7 +446,7 @@ impl KarmaEngineContract {
             timestamp: e.ledger().timestamp(),
         };
         
-        // Add new activity to the front of the list
+        // Add new activity to the front of the list (newest first)
         user_activities.push_front(activity_record);
         
         // Limit the history to MAX_ACTIVITY_HISTORY entries
@@ -400,8 +457,12 @@ impl KarmaEngineContract {
             }
         }
         
-        activities_store.set(user, user_activities);
+        activities_store.set(user.clone(), user_activities);
         e.storage().instance().set(&ACTIVITY, &activities_store);
+        
+        // Emit events
+        e.events().publish((symbol_short!("karma"),), (user.clone(), karma_change));
+        e.events().publish((symbol_short!("karma_upd"),), KarmaEvent::KarmaUpdated(user, karma_points));
         
         karma_change
     }
