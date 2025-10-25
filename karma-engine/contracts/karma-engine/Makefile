@@ -2,14 +2,18 @@ default: build
 
 build:
 	cargo build --target wasm32-unknown-unknown --release
-	mkdir -p ../../target/wasm32-unknown-unknown/release/
-	cp target/wasm32-unknown-unknown/release/*.wasm ../../target/wasm32-unknown-unknown/release/
 
 test:
 	cargo test
 
 clean:
 	cargo clean
-	rm -rf ../../target/wasm32-unknown-unknown/release/karma_engine*
 
-.PHONY: default build test clean
+deploy: build
+	soroban contract deploy \
+		--wasm target/wasm32-unknown-unknown/release/karma_engine.wasm \
+		--source ${SOURCE_ACCOUNT} \
+		--rpc-url ${RPC_URL} \
+		--network-passphrase "${NETWORK_PASSPHRASE}"
+
+.PHONY: default build test clean deploy
