@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class ActivityModel {
   ActivityModel({
     required this.id,
@@ -55,20 +57,37 @@ class ActivityModel {
     }
   }
 
-  String get icon {
+  String get iconName {
     switch (type) {
       case 'post':
-        return '📝';
+        return 'article';
       case 'comment':
-        return '💬';
+        return 'comment';
       case 'like':
-        return '👍';
+        return 'thumb_up';
       case 'repost':
-        return '🔄';
+        return 'repeat';
       case 'report':
-        return '🚩';
+        return 'flag';
       default:
-        return '⭐';
+        return 'star';
+    }
+  }
+
+  IconData get icon {
+    switch (type) {
+      case 'post':
+        return Icons.article;
+      case 'comment':
+        return Icons.comment;
+      case 'like':
+        return Icons.thumb_up;
+      case 'repost':
+        return Icons.repeat;
+      case 'report':
+        return Icons.flag;
+      default:
+        return Icons.star;
     }
   }
 }

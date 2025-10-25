@@ -68,9 +68,10 @@ class ActivityHistoryWidget extends StatelessWidget {
                           shape: BoxShape.circle,
                         ),
                         child: Center(
-                          child: Text(
-                            activity.icon,
-                            style: const TextStyle(fontSize: 20),
+                          child: Icon(
+                            _getIconData(activity.iconName),
+                            size: 20,
+                            color: Theme.of(context).primaryColor,
                           ),
                         ),
                       ),
@@ -116,6 +117,25 @@ class ActivityHistoryWidget extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  IconData _getIconData(String iconName) {
+    switch (iconName) {
+      case 'article':
+        return Icons.article;
+      case 'comment':
+        return Icons.comment;
+      case 'thumb_up':
+        return Icons.thumb_up;
+      case 'repeat':
+        return Icons.repeat;
+      case 'flag':
+        return Icons.flag;
+      case 'star':
+        return Icons.star;
+      default:
+        return Icons.star;
+    }
   }
 
   String _formatTime(DateTime timestamp) {

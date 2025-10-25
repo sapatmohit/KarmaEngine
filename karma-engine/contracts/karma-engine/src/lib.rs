@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, contractmeta, contracttype, Address, Env, Map, Vec, Symbol, symbol_short};
+use soroban_sdk::{contract, contractimpl, contractmeta, contracttype, contracterror, Address, Env, Map, Vec, Symbol, symbol_short};
 use soroban_sdk::token::TokenClient;
 
 // Metadata for the contract
@@ -25,10 +25,25 @@ const TRUSTED_TIER_THRESHOLD: i128 = 100;
 const INFLUENCER_TIER_THRESHOLD: i128 = 500;
 
 // Conversion rate: 10 karma points = 1 XLM (represented as 10000000 stroops)
-const DEFAULT_KARMA_TO_XLM_RATE: i128 = 10;
+// XLM uses 7 decimals (1 XLM = 10^7 stroops)
+const DEFAULT_KARMA_TO_XLM_RATE: i128 = 10 * 10_000_000; // 10 karma = 1 XLM
 
 // Maximum activity history to store per user
 const MAX_ACTIVITY_HISTORY: u32 = 20;
+
+// Custom errors
+#[contracterror]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
+#[repr(u32)]
+pub enum KarmaError {
+    NotRegistered = 1,
+    AlreadyRegistered = 2,
+    Unauthorized = 3,
+    InsufficientBalance = 4,
+    ContractPaused = 5,
+    InsufficientKarma = 6,
+    InvalidAmount = 7,
+}
 
 // Activity types
 #[contracttype]
@@ -83,9 +98,9 @@ pub struct KarmaEngineContract;
 #[contractimpl]
 impl KarmaEngineContract {
     /// Initialize the contract with an owner and XLM token contract
-    pub fn initialize(e: Env, owner: Address, xlm_token: Address) {
+    pub fn initialize(e: Env, owner: Address, xlm_token: Address) -> Result<(), KarmaError> {
         if e.storage().instance().has(&OWNER) {
-            panic!("Already initialized");
+            return Err(KarmaError::AlreadyRegistered);
         }
         e.storage().instance().set(&OWNER, &owner);
         e.storage().instance().set(&KARMATOK, &xlm_token);
@@ -94,19 +109,22 @@ impl KarmaEngineContract {
         
         // Emit event
         e.events().publish((symbol_short!("init"),), owner);
+        
+        Ok(())
     }
 
     /// Register a new user
-    pub fn register_user(e: Env, user: Address) {
+    pub fn register_user(e: Env, user: Address) -> Result<(), KarmaError> {
         // Check if contract is paused
-        if Self::is_paused(e.clone()) {
-            panic!("Contract is paused");
+        let paused = Self::is_paused(e.clone())?;
+        if paused {
+            return Err(KarmaError::ContractPaused);
         }
         
         let mut users: Map<Address, UserData> = e.storage().instance().get(&USERS).unwrap_or_else(|| Map::new(&e));
         
         if users.contains_key(user.clone()) {
-            panic!("User already registered");
+            return Err(KarmaError::AlreadyRegistered);
         }
         
         let user_data = UserData {
@@ -127,31 +145,34 @@ impl KarmaEngineContract {
         
         // Emit UserRegistered event
         e.events().publish((symbol_short!("user_reg"),), KarmaEvent::UserRegistered(user));
+        
+        Ok(())
     }
 
     /// Get user karma points
-    pub fn get_karma(e: Env, user: Address) -> i32 {
+    pub fn get_karma(e: Env, user: Address) -> Result<i32, KarmaError> {
         let users: Map<Address, UserData> = e.storage().instance().get(&USERS).unwrap_or_else(|| Map::new(&e));
         
         if !users.contains_key(user.clone()) {
-            panic!("User not registered");
+            return Err(KarmaError::NotRegistered);
         }
         
         let user_data = users.get(user).unwrap();
-        user_data.karma_points
+        Ok(user_data.karma_points)
     }
 
     /// Get user staking amount
-    pub fn get_stake(e: Env, user: Address) -> i128 {
+    pub fn get_stake(e: Env, user: Address) -> Result<i128, KarmaError> {
         let stakes: Map<Address, i128> = e.storage().instance().get(&STAKES).unwrap_or_else(|| Map::new(&e));
-        stakes.get(user).unwrap_or(0)
+        Ok(stakes.get(user).unwrap_or(0))
     }
 
     /// Stake tokens to increase karma multiplier
-    pub fn stake_tokens(e: Env, user: Address, token: Address, amount: i128) {
+    pub fn stake_tokens(e: Env, user: Address, token: Address, amount: i128) -> Result<(), KarmaError> {
         // Check if contract is paused
-        if Self::is_paused(e.clone()) {
-            panic!("Contract is paused");
+        let paused = Self::is_paused(e.clone())?;
+        if paused {
+            return Err(KarmaError::ContractPaused);
         }
         
         user.require_auth();
@@ -168,13 +189,16 @@ impl KarmaEngineContract {
         
         // Emit event
         e.events().publish((symbol_short!("stake"),), (user.clone(), amount));
+        
+        Ok(())
     }
 
     /// Withdraw staked tokens
-    pub fn withdraw_stake(e: Env, user: Address, token: Address, amount: i128) {
+    pub fn withdraw_stake(e: Env, user: Address, token: Address, amount: i128) -> Result<(), KarmaError> {
         // Check if contract is paused
-        if Self::is_paused(e.clone()) {
-            panic!("Contract is paused");
+        let paused = Self::is_paused(e.clone())?;
+        if paused {
+            return Err(KarmaError::ContractPaused);
         }
         
         user.require_auth();
@@ -183,7 +207,7 @@ impl KarmaEngineContract {
         let current_stake = stakes.get(user.clone()).unwrap_or(0);
         
         if amount > current_stake {
-            panic!("Insufficient stake balance");
+            return Err(KarmaError::InsufficientBalance);
         }
         
         // Update user's stake
@@ -196,67 +220,74 @@ impl KarmaEngineContract {
         
         // Emit event
         e.events().publish((symbol_short!("unstake"),), (user.clone(), amount));
+        
+        Ok(())
     }
 
     /// Record a post activity and update karma
-    pub fn record_post(e: Env, user: Address) -> i32 {
+    pub fn record_post(e: Env, user: Address) -> Result<i32, KarmaError> {
         // Check if contract is paused
-        if Self::is_paused(e.clone()) {
-            panic!("Contract is paused");
+        let paused = Self::is_paused(e.clone())?;
+        if paused {
+            return Err(KarmaError::ContractPaused);
         }
         
         Self::record_activity(e.clone(), user, ActivityType::Post, POST_KARMA)
     }
 
     /// Record a comment activity and update karma
-    pub fn record_comment(e: Env, user: Address) -> i32 {
+    pub fn record_comment(e: Env, user: Address) -> Result<i32, KarmaError> {
         // Check if contract is paused
-        if Self::is_paused(e.clone()) {
-            panic!("Contract is paused");
+        let paused = Self::is_paused(e.clone())?;
+        if paused {
+            return Err(KarmaError::ContractPaused);
         }
         
         Self::record_activity(e.clone(), user, ActivityType::Comment, COMMENT_KARMA)
     }
 
     /// Record a like activity and update karma
-    pub fn record_like(e: Env, user: Address) -> i32 {
+    pub fn record_like(e: Env, user: Address) -> Result<i32, KarmaError> {
         // Check if contract is paused
-        if Self::is_paused(e.clone()) {
-            panic!("Contract is paused");
+        let paused = Self::is_paused(e.clone())?;
+        if paused {
+            return Err(KarmaError::ContractPaused);
         }
         
         Self::record_activity(e.clone(), user, ActivityType::Like, LIKE_KARMA)
     }
 
     /// Record a repost activity and update karma
-    pub fn record_repost(e: Env, user: Address) -> i32 {
+    pub fn record_repost(e: Env, user: Address) -> Result<i32, KarmaError> {
         // Check if contract is paused
-        if Self::is_paused(e.clone()) {
-            panic!("Contract is paused");
+        let paused = Self::is_paused(e.clone())?;
+        if paused {
+            return Err(KarmaError::ContractPaused);
         }
         
         Self::record_activity(e.clone(), user, ActivityType::Repost, REPOST_KARMA)
     }
 
     /// Record a report activity and update karma (negative)
-    pub fn record_report(e: Env, user: Address) -> i32 {
+    pub fn record_report(e: Env, user: Address) -> Result<i32, KarmaError> {
         // Check if contract is paused
-        if Self::is_paused(e.clone()) {
-            panic!("Contract is paused");
+        let paused = Self::is_paused(e.clone())?;
+        if paused {
+            return Err(KarmaError::ContractPaused);
         }
         
         Self::record_activity(e.clone(), user, ActivityType::Report, REPORT_PENALTY)
     }
 
     /// Get user's activity history (newest first)
-    pub fn get_activities(e: Env, user: Address) -> Vec<ActivityRecord> {
+    pub fn get_activities(e: Env, user: Address) -> Result<Vec<ActivityRecord>, KarmaError> {
         let activities_store: Map<Address, Vec<ActivityRecord>> = e.storage().instance().get(&ACTIVITY).unwrap_or_else(|| Map::new(&e));
-        activities_store.get(user).unwrap_or_else(|| Vec::new(&e))
+        Ok(activities_store.get(user).unwrap_or_else(|| Vec::new(&e)))
     }
 
     /// Get user's karma multiplier based on their stake with normalized tiers
-    pub fn get_multiplier(e: Env, user: Address) -> u32 {
-        let stake = Self::get_stake(e, user);
+    pub fn get_multiplier(e: Env, user: Address) -> Result<u32, KarmaError> {
+        let stake = Self::get_stake(e, user)?;
         
         // Normalize staking via simplified scaling to prevent whale dominance
         if stake >= INFLUENCER_TIER_THRESHOLD {
@@ -265,19 +296,20 @@ impl KarmaEngineContract {
             let scaled_stake = stake / 100; // Reduce the impact of large stakes
             let multiplier = INFLUENCER_MULTIPLIER + (scaled_stake as u32).min(30); // Cap additional multiplier at 30
             // Cap the total multiplier to prevent excessive influence
-            multiplier.min(50) // Maximum 5x multiplier
+            Ok(multiplier.min(50)) // Maximum 5x multiplier
         } else if stake >= TRUSTED_TIER_THRESHOLD {
-            TRUSTED_MULTIPLIER
+            Ok(TRUSTED_MULTIPLIER)
         } else {
-            REGULAR_MULTIPLIER
+            Ok(REGULAR_MULTIPLIER)
         }
     }
 
     /// Redeem karma points for XLM tokens
-    pub fn redeem_karma(e: Env, user: Address, karma_amount: i32) {
+    pub fn redeem_karma(e: Env, user: Address, karma_amount: i32) -> Result<(), KarmaError> {
         // Check if contract is paused
-        if Self::is_paused(e.clone()) {
-            panic!("Contract is paused");
+        let paused = Self::is_paused(e.clone())?;
+        if paused {
+            return Err(KarmaError::ContractPaused);
         }
         
         user.require_auth();
@@ -286,13 +318,13 @@ impl KarmaEngineContract {
         let mut users: Map<Address, UserData> = e.storage().instance().get(&USERS).unwrap_or_else(|| Map::new(&e));
         
         if !users.contains_key(user.clone()) {
-            panic!("User not registered");
+            return Err(KarmaError::NotRegistered);
         }
         
         // Check if user has enough karma
         let mut user_data = users.get(user.clone()).unwrap();
         if user_data.karma_points < karma_amount {
-            panic!("Insufficient karma balance");
+            return Err(KarmaError::InsufficientKarma);
         }
         
         // Calculate XLM amount using current conversion rate
@@ -301,7 +333,7 @@ impl KarmaEngineContract {
         let _leftover_karma = (karma_amount as i128) % karma_rate; // Track leftover karma for future use
         
         if xlm_amount == 0 {
-            panic!("Karma amount too small to redeem");
+            return Err(KarmaError::InvalidAmount);
         }
         
         // Deduct karma from user (including leftover karma that can't be converted)
@@ -317,49 +349,51 @@ impl KarmaEngineContract {
         // Emit events
         e.events().publish((symbol_short!("redeem"),), (user.clone(), karma_amount, xlm_amount));
         e.events().publish((symbol_short!("karma_red"),), KarmaEvent::KarmaRedeemed(user.clone(), karma_amount as i128, xlm_amount));
+        
+        Ok(())
     }
 
     /// Get the XLM token contract address
-    pub fn get_xlm_token(e: Env) -> Address {
-        e.storage().instance().get(&KARMATOK).unwrap()
+    pub fn get_xlm_token(e: Env) -> Result<Address, KarmaError> {
+        Ok(e.storage().instance().get(&KARMATOK).unwrap())
     }
 
     /// Get the current karma to XLM conversion rate
-    pub fn get_karma_rate(e: Env) -> i128 {
-        e.storage().instance().get(&KARMART).unwrap_or(DEFAULT_KARMA_TO_XLM_RATE)
+    pub fn get_karma_rate(e: Env) -> Result<i128, KarmaError> {
+        Ok(e.storage().instance().get(&KARMART).unwrap_or(DEFAULT_KARMA_TO_XLM_RATE))
     }
 
     /// Check if contract is paused
-    pub fn is_paused(e: Env) -> bool {
-        e.storage().instance().get(&PAUSED).unwrap_or(false)
+    pub fn is_paused(e: Env) -> Result<bool, KarmaError> {
+        Ok(e.storage().instance().get(&PAUSED).unwrap_or(false))
     }
 
     /// Get the total karma of all users (for leaderboard)
-    pub fn total_karma(e: Env) -> i32 {
+    pub fn total_karma(e: Env) -> Result<i32, KarmaError> {
         let users: Map<Address, UserData> = e.storage().instance().get(&USERS).unwrap_or_else(|| Map::new(&e));
         let mut total = 0;
         for user_data in users.values() {
             total += user_data.karma_points;
         }
-        total
+        Ok(total)
     }
 
     /// Get how much XLM a user can redeem based on their current karma and rate
-    pub fn redeemable_balance(e: Env, user: Address) -> i128 {
-        let karma = Self::get_karma(e.clone(), user) as i128;
+    pub fn redeemable_balance(e: Env, user: Address) -> Result<i128, KarmaError> {
+        let karma = Self::get_karma(e.clone(), user)? as i128;
         let karma_rate: i128 = e.storage().instance().get(&KARMART).unwrap_or(DEFAULT_KARMA_TO_XLM_RATE);
-        karma / karma_rate
+        Ok(karma / karma_rate)
     }
 
     /// ADMIN FUNCTIONS ///
 
     /// Pause/unpause the contract (admin only)
-    pub fn set_paused(e: Env, admin: Address, paused: bool) {
+    pub fn set_paused(e: Env, admin: Address, paused: bool) -> Result<(), KarmaError> {
         admin.require_auth();
         
         let owner: Address = e.storage().instance().get(&OWNER).unwrap();
         if admin != owner {
-            panic!("Unauthorized");
+            return Err(KarmaError::Unauthorized);
         }
         
         e.storage().instance().set(&PAUSED, &paused);
@@ -367,34 +401,38 @@ impl KarmaEngineContract {
         // Emit events
         e.events().publish((symbol_short!("pause"),), paused);
         e.events().publish((symbol_short!("con_pause"),), KarmaEvent::ContractPaused(paused));
+        
+        Ok(())
     }
 
     /// Adjust the karma to XLM conversion rate (admin only)
-    pub fn set_karma_rate(e: Env, admin: Address, rate: i128) {
+    pub fn set_karma_rate(e: Env, admin: Address, rate: i128) -> Result<(), KarmaError> {
         admin.require_auth();
         
         let owner: Address = e.storage().instance().get(&OWNER).unwrap();
         if admin != owner {
-            panic!("Unauthorized");
+            return Err(KarmaError::Unauthorized);
         }
         
         if rate <= 0 {
-            panic!("Bad rate");
+            return Err(KarmaError::InvalidAmount);
         }
         
         e.storage().instance().set(&KARMART, &rate);
         
         // Emit event
         e.events().publish((symbol_short!("rate"),), rate);
+        
+        Ok(())
     }
 
     /// Reset a user's karma and stake (admin only, for testing)
-    pub fn reset_user(e: Env, admin: Address, user: Address) {
+    pub fn reset_user(e: Env, admin: Address, user: Address) -> Result<(), KarmaError> {
         admin.require_auth();
         
         let owner: Address = e.storage().instance().get(&OWNER).unwrap();
         if admin != owner {
-            panic!("Unauthorized");
+            return Err(KarmaError::Unauthorized);
         }
         
         // Reset user's karma
@@ -413,19 +451,21 @@ impl KarmaEngineContract {
         
         // Emit event
         e.events().publish((symbol_short!("reset"),), user);
+        
+        Ok(())
     }
 
     /// Internal function to record any activity and update karma
-    fn record_activity(e: Env, user: Address, activity_type: ActivityType, base_karma: i32) -> i32 {
+    fn record_activity(e: Env, user: Address, activity_type: ActivityType, base_karma: i32) -> Result<i32, KarmaError> {
         // Check if user is registered
         let mut users: Map<Address, UserData> = e.storage().instance().get(&USERS).unwrap_or_else(|| Map::new(&e));
         
         if !users.contains_key(user.clone()) {
-            panic!("User not registered");
+            return Err(KarmaError::NotRegistered);
         }
         
         // Calculate karma with multiplier
-        let multiplier = Self::get_multiplier(e.clone(), user.clone());
+        let multiplier = Self::get_multiplier(e.clone(), user.clone())?;
         // Apply multiplier (multiplier is stored with 1 decimal place, so divide by 10)
         let karma_change = (base_karma as i64 * multiplier as i64 / 10) as i32;
         
@@ -464,7 +504,7 @@ impl KarmaEngineContract {
         e.events().publish((symbol_short!("karma"),), (user.clone(), karma_change));
         e.events().publish((symbol_short!("karma_upd"),), KarmaEvent::KarmaUpdated(user, karma_points));
         
-        karma_change
+        Ok(karma_change)
     }
 }
 

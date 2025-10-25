@@ -3,6 +3,9 @@ import 'package:karma_engine_app/features/dashboard/presentation/widgets/karma_c
 import 'package:karma_engine_app/features/dashboard/presentation/widgets/stake_redeem_buttons.dart';
 import 'package:karma_engine_app/features/dashboard/presentation/widgets/activity_history_widget.dart';
 import 'package:karma_engine_app/features/dashboard/presentation/widgets/staking_info_widget.dart';
+import 'package:karma_engine_app/features/auth/presentation/screens/profile_screen.dart';
+import 'package:karma_engine_app/core/services/api_service.dart';
+import 'package:karma_engine_app/core/models/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:karma_engine_app/core/utils/constants.dart';
 
@@ -15,9 +18,8 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   String walletAddress = '';
-  int karmaPoints = 0;
-  double stakedAmount = 0;
-  double multiplier = 1;
+  UserModel? currentUser;
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -33,87 +35,165 @@ class _DashboardScreenState extends State<DashboardScreen> {
       walletAddress = address;
     });
 
-    // In a real app, you would fetch user data from the API here
-    // For now, we'll use mock data
-    setState(() {
-      karmaPoints = 1250;
-      stakedAmount = 50.0;
-      multiplier = 1.5;
-    });
+    if (address.isNotEmpty) {
+      try {
+        final user = await ApiService().getUserByWallet(address);
+        setState(() {
+          currentUser = user;
+          isLoading = false;
+        });
+      } catch (e) {
+        setState(() {
+          isLoading = false;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to load user data: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } else {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: const Text('Dashboard'),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.logout),
-          onPressed: () async {
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.remove(Constants.walletAddressKey);
-
-            if (mounted) {
-              Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
-            }
-          },
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Dashboard')),
+        body: const Center(
+          child: CircularProgressIndicator(),
         ),
-      ],
-    ),
-    body: SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Wallet address display
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Wallet Address',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    walletAddress,
-                    style: const TextStyle(fontSize: 14, color: Colors.grey),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
+      );
+    }
 
-          // Karma card
-          KarmaCardWidget(
-            karmaPoints: karmaPoints,
-            stakedAmount: stakedAmount,
-            multiplier: multiplier,
-          ),
-          const SizedBox(height: 16),
+    if (currentUser == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Dashboard')),
+        body: const Center(
+          child: Text('Failed to load user data'),
+        ),
+      );
+    }
 
-          // Staking info
-          StakingInfoWidget(stakedAmount: stakedAmount, multiplier: multiplier),
-          const SizedBox(height: 16),
-
-          // Stake/Redeem buttons
-          StakeRedeemButtons(
-            onStake: () {
-              // Implement stake functionality
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Dashboard'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.person),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ProfileScreen()),
+              );
             },
-            onRedeem: () {
-              // Implement redeem functionality
-            },
+            tooltip: 'Profile',
           ),
-          const SizedBox(height: 16),
-
-          // Activity history
-          const ActivityHistoryWidget(),
         ],
       ),
-    ),
-  );
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Wallet address display
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Wallet Address',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      currentUser!.walletAddress,
+                      style: const TextStyle(fontSize: 14, color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Karma card
+            KarmaCardWidget(
+              karmaPoints: currentUser!.karmaPoints,
+              stakedAmount: currentUser!.stakedAmount,
+              multiplier: currentUser!.multiplier,
+            ),
+            const SizedBox(height: 16),
+
+            // Staking info
+            StakingInfoWidget(
+              stakedAmount: currentUser!.stakedAmount, 
+              multiplier: currentUser!.multiplier,
+            ),
+            const SizedBox(height: 16),
+
+            // Stake/Redeem buttons
+            StakeRedeemButtons(
+              karmaBalance: currentUser!.karmaPoints.toDouble(),
+              stakedAmount: currentUser!.stakedAmount,
+              onStake: (amount) async {
+                try {
+                  // TODO: Implement real staking with transaction hash
+                  final updatedUser = await ApiService().updateUserKarma(
+                    currentUser!.walletAddress,
+                    currentUser!.karmaPoints - amount.toInt(),
+                  );
+                  setState(() {
+                    currentUser = currentUser!.copyWith(
+                      karmaPoints: updatedUser.karmaPoints,
+                      stakedAmount: currentUser!.stakedAmount + amount,
+                    );
+                  });
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Staking failed: ${e.toString()}')),
+                    );
+                  }
+                }
+              },
+              onRedeem: (amount) async {
+                try {
+                  // TODO: Implement real unstaking with transaction hash
+                  final updatedUser = await ApiService().updateUserKarma(
+                    currentUser!.walletAddress,
+                    currentUser!.karmaPoints + amount.toInt(),
+                  );
+                  setState(() {
+                    currentUser = currentUser!.copyWith(
+                      karmaPoints: updatedUser.karmaPoints,
+                      stakedAmount: currentUser!.stakedAmount - amount,
+                    );
+                  });
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Redeem failed: ${e.toString()}')),
+                    );
+                  }
+                }
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // Activity history
+            const ActivityHistoryWidget(),
+          ],
+        ),
+      ),
+    );
+  }
 }

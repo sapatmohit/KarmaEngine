@@ -85,9 +85,10 @@ class ActivityFeed extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: Center(
-                  child: Text(
+                  child: Icon(
                     activity.icon,
-                    style: const TextStyle(fontSize: 20),
+                    size: 20,
+                    color: const Color(0xFF6A1B9A),
                   ),
                 ),
               ),
