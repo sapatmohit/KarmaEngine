@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import ApiService from '../services/api';
 
 const AuthContext = createContext();
@@ -20,13 +20,29 @@ export const AuthProvider = ({ children }) => {
 
   // Check if user is already logged in on app start
   useEffect(() => {
+    checkAuthStatus();
+  }, []);
+
+  const checkAuthStatus = async () => {
     const savedWallet = localStorage.getItem('walletAddress');
+    const savedUser = localStorage.getItem('ke_user');
+    
     if (savedWallet) {
-      checkUserExists(savedWallet);
+      await checkUserExists(savedWallet);
+    } else if (savedUser) {
+      // Handle email-based login
+      try {
+        const userData = JSON.parse(savedUser);
+        setUser(userData);
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        localStorage.removeItem('ke_user');
+      }
+      setIsLoading(false);
     } else {
       setIsLoading(false);
     }
-  }, []);
+  };
 
   const checkUserExists = async (walletAddress) => {
     try {
@@ -92,6 +108,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     localStorage.removeItem('walletAddress');
+    localStorage.removeItem('ke_user');
   };
 
   const updateUserKarma = async (karmaPoints) => {
@@ -107,6 +124,11 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const emailLogin = (userData) => {
+    setUser(userData);
+    localStorage.setItem('ke_user', JSON.stringify(userData));
+  };
+
   const value = {
     user,
     isLoading,
@@ -115,6 +137,7 @@ export const AuthProvider = ({ children }) => {
     registerUser,
     logout,
     updateUserKarma,
+    emailLogin,
     isAuthenticated: !!user,
   };
 

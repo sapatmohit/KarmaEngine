@@ -7,12 +7,13 @@ import { useAuth } from '../../contexts/AuthContext';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, connectWallet, emailLogin } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [isConnecting, setIsConnecting] = useState(false);
 
   // Redirect to dashboard if already authenticated
   useEffect(() => {
@@ -37,6 +38,42 @@ export default function LoginPage() {
     return null; // Will redirect immediately
   }
 
+  const handleWalletLogin = async () => {
+    try {
+      setIsConnecting(true);
+      setError('');
+      setSuccess('');
+      
+      // Use the existing connectWallet function from AuthContext
+      const result = await connectWallet();
+      
+      if (result.isNewUser) {
+        // For demo purposes, we'll create a mock user
+        const mockUserData = {
+          walletAddress: result.walletAddress,
+          name: 'User ' + result.walletAddress.substring(0, 6),
+          dateOfBirth: '1990-01-01',
+          instagram: '',
+          facebook: '',
+          twitter: '',
+        };
+        
+        // In a real app, this would redirect to a registration page
+        // For now, we'll simulate registration
+        localStorage.setItem('walletAddress', result.walletAddress);
+        setSuccess('Wallet connected! Redirecting to dashboard...');
+        setTimeout(() => router.push('/dashboard'), 1500);
+      } else {
+        setSuccess('Wallet connected! Redirecting to dashboard...');
+        setTimeout(() => router.push('/dashboard'), 1500);
+      }
+    } catch (err) {
+      setError(err.message || 'Failed to connect wallet');
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -49,27 +86,21 @@ export default function LoginPage() {
 
     try {
       // Mock login - in a real app, this would call an actual login API
-      // For now, we'll simulate a successful login and store user data
-      
-      // Create mock user data
+      // For now, we'll simulate a successful login with a mock user
       const mockUser = {
         id: 'user_' + Date.now(),
         email: email,
         name: email.split('@')[0],
-        walletAddress: '0x742d35Cc6634C0532925a3b8D4C0532925a3b8D4',
         registered: true,
         createdAt: new Date().toISOString()
       };
       
-      // Store user data in localStorage
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('ke_user', JSON.stringify(mockUser));
-      }
+      // Use the emailLogin function from AuthContext
+      emailLogin(mockUser);
       
-      setSuccess('Login successful! Redirecting...');
+      setSuccess('Login successful! Redirecting to dashboard...');
       
-      // The AuthContext will detect the localStorage change and update the auth state
-      // We'll redirect after a short delay to allow the context to update
+      // Redirect to dashboard after a short delay
       setTimeout(() => router.push('/dashboard'), 1500);
     } catch (err) {
       setError('Invalid email or password');
@@ -111,6 +142,36 @@ export default function LoginPage() {
               Register now!
             </Link>
           </p>
+
+          {/* Wallet Connect Button */}
+          <button
+            onClick={handleWalletLogin}
+            disabled={isConnecting}
+            className="w-full mb-6 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-gray-600 disabled:to-gray-600 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 disabled:scale-100 disabled:cursor-not-allowed flex items-center justify-center space-x-3"
+          >
+            {isConnecting ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                <span>Connecting...</span>
+              </>
+            ) : (
+              <>
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M17.778 8.222c-4.296-4.296-11.26-4.296-15.556 0A1 1 0 01.808 6.808c5.076-5.077 13.308-5.077 18.384 0a1 1 0 01-1.414 1.414zM14.95 11.05a7 7 0 00-9.9 0 1 1 0 01-1.414-1.414 9 9 0 0112.728 0 1 1 0 01-1.414 1.414zM12.12 13.88a3 3 0 00-4.242 0 1 1 0 01-1.415-1.415 5 5 0 017.072 0 1 1 0 01-1.415 1.415zM9 16a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clipRule="evenodd" />
+                </svg>
+                <span>Connect Wallet</span>
+              </>
+            )}
+          </button>
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-700"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-slate-900 text-slate-400">Or continue with email</span>
+            </div>
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email Input */}
@@ -174,7 +235,7 @@ export default function LoginPage() {
               type="submit"
               className="w-full py-3 rounded-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition transform hover:scale-105"
             >
-              Sign in
+              Sign in with Email
             </button>
           </form>
 
