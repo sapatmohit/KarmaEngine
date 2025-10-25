@@ -132,11 +132,11 @@ const Navigation = () => {
                   <p className="text-xs text-gray-400 truncate">{user.walletAddress}</p>
                 </div>
                 <Link
-                  href="/dashboard"
+                  href="/profile"
                   className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 transition-colors"
                   onClick={() => setIsDropdownOpen(false)}
                 >
-                  Dashboard
+                  Profile
                 </Link>
                 <button
                   onClick={handleLogout}

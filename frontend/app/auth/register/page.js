@@ -90,8 +90,8 @@ export default function RegisterPage() {
         localStorage.setItem('ke_user', JSON.stringify(mockUser));
       }
       
-      setSuccess('Account created successfully! Redirecting...');
-      setTimeout(() => router.push('/dashboard'), 1500);
+      setSuccess('Account created successfully! Redirecting to profile...');
+      setTimeout(() => router.push('/profile'), 1500);
     } catch (err) {
       setError(err.message || 'Failed to create account. Please try again.');
     } finally {

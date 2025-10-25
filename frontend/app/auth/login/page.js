@@ -61,11 +61,11 @@ export default function LoginPage() {
         // In a real app, this would redirect to a registration page
         // For now, we'll simulate registration
         localStorage.setItem('walletAddress', result.walletAddress);
-        setSuccess('Wallet connected! Redirecting to dashboard...');
-        setTimeout(() => router.push('/dashboard'), 1500);
+        setSuccess('Wallet connected! Redirecting to profile...');
+        setTimeout(() => router.push('/profile'), 1500);
       } else {
-        setSuccess('Wallet connected! Redirecting to dashboard...');
-        setTimeout(() => router.push('/dashboard'), 1500);
+        setSuccess('Wallet connected! Redirecting to profile...');
+        setTimeout(() => router.push('/profile'), 1500);
       }
     } catch (err) {
       setError(err.message || 'Failed to connect wallet');
@@ -98,10 +98,10 @@ export default function LoginPage() {
       // Use the emailLogin function from AuthContext
       emailLogin(mockUser);
       
-      setSuccess('Login successful! Redirecting to dashboard...');
+      setSuccess('Login successful! Redirecting to profile...');
       
-      // Redirect to dashboard after a short delay
-      setTimeout(() => router.push('/dashboard'), 1500);
+      // Redirect to profile after a short delay
+      setTimeout(() => router.push('/profile'), 1500);
     } catch (err) {
       setError('Invalid email or password');
     }
