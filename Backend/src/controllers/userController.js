@@ -18,11 +18,9 @@ const registerUser = async (req, res) => {
 
 		// Validate required fields
 		if (!walletAddress || !name || !dateOfBirth) {
-			return res
-				.status(400)
-				.json({
-					message: 'Wallet address, name, and date of birth are required',
-				});
+			return res.status(400).json({
+				message: 'Wallet address, name, and date of birth are required',
+			});
 		}
 
 		// Check if user already exists
@@ -182,13 +180,16 @@ const updateUserKarma = async (req, res) => {
  */
 const registerEmailUser = async (req, res) => {
 	try {
-		const { email, password, name, country } = req.body;
+		const { email, password, name, dateOfBirth, instagram, facebook, twitter } =
+			req.body;
 
 		// Validate required fields
-		if (!email || !password || !name) {
+		if (!email || !password || !name || !dateOfBirth) {
 			return res
 				.status(400)
-				.json({ message: 'Email, password, and name are required' });
+				.json({
+					message: 'Email, password, name, and date of birth are required',
+				});
 		}
 
 		// Check if user already exists
@@ -197,6 +198,14 @@ const registerEmailUser = async (req, res) => {
 			return res
 				.status(400)
 				.json({ message: 'User already registered with this email' });
+		}
+
+		// Check age verification
+		const isOver18User = isOver18(dateOfBirth);
+		if (!isOver18User) {
+			return res
+				.status(400)
+				.json({ message: 'User must be over 18 years old to register' });
 		}
 
 		// Generate username from email
@@ -208,8 +217,15 @@ const registerEmailUser = async (req, res) => {
 			email,
 			password,
 			name,
+			dateOfBirth: new Date(dateOfBirth),
+			isOver18: isOver18User,
 			username,
 			avatar: generateRandomAvatar(),
+			socialMedia: {
+				instagram: instagram || '',
+				facebook: facebook || '',
+				twitter: twitter || '',
+			},
 			karmaPoints: 0,
 		});
 
@@ -228,6 +244,9 @@ const registerEmailUser = async (req, res) => {
 				name: user.name,
 				username: user.username,
 				avatar: user.avatar,
+				dateOfBirth: user.dateOfBirth,
+				isOver18: user.isOver18,
+				socialMedia: user.socialMedia,
 				karmaPoints: user.karmaPoints,
 			},
 		});
@@ -302,6 +321,9 @@ const getCurrentUser = async (req, res) => {
 				name: user.name,
 				username: user.username,
 				avatar: user.avatar,
+				dateOfBirth: user.dateOfBirth,
+				isOver18: user.isOver18,
+				socialMedia: user.socialMedia,
 				walletAddress: user.walletAddress,
 				karmaPoints: user.karmaPoints,
 				stakedAmount: user.stakedAmount,

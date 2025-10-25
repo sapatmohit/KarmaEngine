@@ -18,9 +18,10 @@ export default function RegisterPage() {
 	const [formData, setFormData] = useState({
 		fullname: '',
 		email: '',
-		country: '',
-		referralCode: '',
-		referralCode2: '',
+		dateOfBirth: '',
+		instagram: '',
+		facebook: '',
+		twitter: '',
 		password: '',
 		confirmPassword: '',
 		walletAddress: '',
@@ -43,8 +44,23 @@ export default function RegisterPage() {
 			setError('Please enter a valid email');
 			return false;
 		}
-		if (!formData.country) {
-			setError('Please select your country');
+		if (!formData.dateOfBirth) {
+			setError('Please enter your date of birth');
+			return false;
+		}
+		// Check if user is over 18
+		const today = new Date();
+		const birthDate = new Date(formData.dateOfBirth);
+		const age = today.getFullYear() - birthDate.getFullYear();
+		const monthDiff = today.getMonth() - birthDate.getMonth();
+		if (
+			monthDiff < 0 ||
+			(monthDiff === 0 && today.getDate() < birthDate.getDate())
+		) {
+			age--;
+		}
+		if (age < 18) {
+			setError('You must be at least 18 years old to register');
 			return false;
 		}
 		if (!formData.password || formData.password.length < 6) {
@@ -75,7 +91,10 @@ export default function RegisterPage() {
 				email: formData.email,
 				password: formData.password,
 				name: formData.fullname,
-				country: formData.country,
+				dateOfBirth: formData.dateOfBirth,
+				instagram: formData.instagram,
+				facebook: formData.facebook,
+				twitter: formData.twitter,
 			});
 
 			setSuccess('Account created successfully! Redirecting...');
@@ -216,37 +235,61 @@ export default function RegisterPage() {
 								/>
 							</div>
 
-							{/* Country */}
+							{/* Date of Birth */}
 							<div>
 								<label className="block text-sm font-medium text-white mb-2">
-									Country *
+									Date of Birth *
 								</label>
-								<select
-									name="country"
-									value={formData.country}
+								<input
+									type="date"
+									name="dateOfBirth"
+									value={formData.dateOfBirth}
 									onChange={handleChange}
 									className="w-full px-4 py-3 rounded-lg bg-slate-800/50 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
-								>
-									<option value="">Select your country</option>
-									<option value="US">United States</option>
-									<option value="UK">United Kingdom</option>
-									<option value="IN">India</option>
-									<option value="CA">Canada</option>
-									<option value="AU">Australia</option>
-								</select>
+								/>
 							</div>
 
-							{/* Referral Code 1 */}
+							{/* Instagram */}
 							<div>
 								<label className="block text-sm font-medium text-white mb-2">
-									Referral code (optional)
+									Instagram (optional)
 								</label>
 								<input
 									type="text"
-									name="referralCode"
-									value={formData.referralCode}
+									name="instagram"
+									value={formData.instagram}
 									onChange={handleChange}
-									placeholder="Referral code"
+									placeholder="@username"
+									className="w-full px-4 py-3 rounded-lg bg-slate-800/50 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+								/>
+							</div>
+
+							{/* Facebook */}
+							<div>
+								<label className="block text-sm font-medium text-white mb-2">
+									Facebook (optional)
+								</label>
+								<input
+									type="text"
+									name="facebook"
+									value={formData.facebook}
+									onChange={handleChange}
+									placeholder="Facebook username"
+									className="w-full px-4 py-3 rounded-lg bg-slate-800/50 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+								/>
+							</div>
+
+							{/* Twitter */}
+							<div>
+								<label className="block text-sm font-medium text-white mb-2">
+									Twitter (optional)
+								</label>
+								<input
+									type="text"
+									name="twitter"
+									value={formData.twitter}
+									onChange={handleChange}
+									placeholder="@username"
 									className="w-full px-4 py-3 rounded-lg bg-slate-800/50 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
 								/>
 							</div>
