@@ -25,7 +25,7 @@ export default function Leaderboard() {
         // Process leaderboard data
         const processedData = response.leaderboard.map((user, index) => ({
           rank: index + 1,
-          username: user.username || `User${user.walletAddress.substring(0, 6)}`,
+          username: user.username || (user.walletAddress ? `User${user.walletAddress.substring(0, 6)}` : 'Anonymous'),
           user: user.walletAddress,
           karma: user.karmaPoints,
           tier: user.stakedAmount >= 500 ? 'Influencer' : user.stakedAmount >= 100 ? 'Trusted' : 'Regular',
@@ -148,7 +148,7 @@ export default function Leaderboard() {
                           <div>
                             <div className="font-medium text-white">{currentUserData.username}</div>
                             <div className="text-xs text-gray-400">
-                              {currentUserData.user.substring(0, 6)}...{currentUserData.user.substring(currentUserData.user.length - 4)}
+                              {currentUserData.user ? `${currentUserData.user.substring(0, 6)}...${currentUserData.user.substring(currentUserData.user.length - 4)}` : 'N/A'}
                             </div>
                           </div>
                         </div>
@@ -229,7 +229,7 @@ export default function Leaderboard() {
                           <div>
                             <div className="font-medium text-white">{user.username}</div>
                             <div className="text-xs text-gray-400">
-                              {user.user.substring(0, 6)}...{user.user.substring(user.user.length - 4)}
+                              {user.user ? `${user.user.substring(0, 6)}...${user.user.substring(user.user.length - 4)}` : 'N/A'}
                             </div>
                           </div>
                         </div>
