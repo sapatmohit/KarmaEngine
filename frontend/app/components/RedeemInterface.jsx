@@ -7,9 +7,6 @@ const RedeemInterface = () => {
   const [activeTab, setActiveTab] = useState('redeem');
   const [karmaAmount, setKarmaAmount] = useState('');
   const [xlmAmount, setXlmAmount] = useState('');
-  const [selectedKarmaToken, setSelectedKarmaToken] = useState('KARMA');
-  const [selectedXlmToken, setSelectedXlmToken] = useState('XLM');
-  const [isTokenDropdownOpen, setIsTokenDropdownOpen] = useState(false);
 
   // Mock exchange rate (1 KARMA = 0.1 XLM)
   const exchangeRate = 0.1;

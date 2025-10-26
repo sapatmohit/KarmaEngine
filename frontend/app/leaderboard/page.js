@@ -112,15 +112,6 @@ export default function Leaderboard() {
   return (
     <MainLayout>
       <div className="space-y-8">
-        <div>
-          <GlassCard className="text-center py-8">
-            <h1 className="text-3xl font-bold mb-2">Karma Leaderboard</h1>
-            <p className="text-gray-400 max-w-2xl mx-auto">
-              See how you rank against other community members based on your karma score.
-            </p>
-          </GlassCard>
-        </div>
-
         {/* Your Rank */}
         {currentUserData && (
           <div>
