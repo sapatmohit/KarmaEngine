@@ -93,7 +93,10 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <GlassCard className="text-center">
             <h3 className="text-gray-400 text-sm font-medium mb-1">Karma Balance</h3>
-            <div className="text-2xl font-bold text-white">{userData.karmaBalance?.toLocaleString() || 0}</div>
+            <div className="text-2xl font-bold text-white flex items-center">
+              <img src="./karma_token_icon.svg" alt="Karma Token" className="w-5 h-5 mr-1" />
+              {userData.karmaBalance?.toLocaleString() || 0}
+            </div>
             <div className="mt-2">
               <KarmaBadge karma={userData.karmaBalance} />
             </div>

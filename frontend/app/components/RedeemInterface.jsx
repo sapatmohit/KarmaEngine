@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useState } from 'react';
 
 const RedeemInterface = () => {
   const [activeTab, setActiveTab] = useState('redeem');
@@ -115,8 +115,8 @@ const RedeemInterface = () => {
                       }}
                       className="w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700 transition-colors flex items-center space-x-2"
                     >
-                      <div className="w-6 h-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                        <span className="text-xs font-bold">K</span>
+                      <div className="w-6 h-6">
+                        <img src="./karma_token_icon.svg" alt="Karma Token" className="w-6 h-6" />
                       </div>
                       <span>KARMA</span>
                     </button>
@@ -161,8 +161,8 @@ const RedeemInterface = () => {
             </div>
             <div className="flex items-center space-x-2 ml-4">
               <button className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition-colors">
-                <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                  <span className="text-xs font-bold text-white">X</span>
+                <div className="w-6 h-6">
+                  <img src="./karma_token_icon.svg" alt="Karma Token" className="w-6 h-6" />
                 </div>
                 <span>XLM</span>
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">

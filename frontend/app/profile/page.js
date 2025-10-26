@@ -235,7 +235,10 @@ export default function Profile() {
                 <div>
                   <div className="flex justify-between mb-1">
                     <span className="text-gray-400">Karma Balance</span>
-                    <span className="font-bold text-white">{karmaBalance}</span>
+                    <span className="font-bold text-white flex items-center">
+                      <img src="./karma_token_icon.svg" alt="Karma Token" className="w-4 h-4 mr-1" />
+                      {karmaBalance}
+                    </span>
                   </div>
                   <div className="w-full bg-gray-700 rounded-full h-2">
                     <div 

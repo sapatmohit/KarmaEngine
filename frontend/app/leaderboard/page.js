@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import GlassCard from '../components/GlassCard';
 import KarmaBadge from '../components/KarmaBadge';
-import { useKarma } from '../contexts/KarmaContext';
-import { useAuth } from '../contexts/AuthContext';
 import MainLayout from '../components/MainLayout';
+import { useAuth } from '../contexts/AuthContext';
+import { useKarma } from '../contexts/KarmaContext';
 import ApiService from '../services/api';
 
 export default function Leaderboard() {
@@ -166,8 +166,8 @@ export default function Leaderboard() {
                       {/* Karma Token */}
                       <td className="py-3 px-2 text-sm">
                         <div className="flex items-center space-x-2">
-                          <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                            <span className="text-white font-bold text-xs">K</span>
+                          <div className="w-6 h-6">
+                            <img src="./karma_token_icon.svg" alt="Karma Token" className="w-6 h-6" />
                           </div>
                           <span className="text-white font-mono">{currentUserData.karma?.toLocaleString() || 0}</span>
                         </div>
@@ -247,8 +247,8 @@ export default function Leaderboard() {
                       {/* Karma Token */}
                       <td className="py-3 px-2 text-sm">
                         <div className="flex items-center space-x-2">
-                          <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                            <span className="text-white font-bold text-xs">K</span>
+                          <div className="w-6 h-6">
+                            <img src="./karma_token_icon.svg" alt="Karma Token" className="w-6 h-6" />
                           </div>
                           <span className="text-white font-mono">{user.karma?.toLocaleString() || 0}</span>
                         </div>

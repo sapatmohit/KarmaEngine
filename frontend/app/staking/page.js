@@ -166,11 +166,20 @@ export default function Staking() {
 										</span>
 									</div>
 									<div className="space-y-1">
-										<div className="text-2xl font-bold text-white">
-											{stat.value}{' '}
-											<span className="text-slate-400 text-lg">
-												{stat.unit}
-											</span>
+										<div className="text-2xl font-bold text-white flex items-center">
+											{stat.unit === 'KARMA' ? (
+												<>
+													<img src="./karma_token_icon.svg" alt="Karma Token" className="w-5 h-5 mr-1" />
+													{stat.value}
+												</>
+											) : (
+												<>
+													{stat.value}{' '}
+													<span className="text-slate-400 text-lg">
+														{stat.unit}
+													</span>
+												</>
+											)}
 										</div>
 										<div className="text-slate-400 text-sm">{stat.title}</div>
 									</div>
@@ -254,13 +263,15 @@ export default function Staking() {
 											<div className="space-y-2 text-sm">
 												<div className="flex justify-between">
 													<span className="text-slate-400">Current Stake:</span>
-													<span className="text-white">
+													<span className="text-white flex items-center">
+														<img src="./karma_token_icon.svg" alt="Karma Token" className="w-4 h-4 mr-1" />
 														{userData.stakeAmount} KARMA
 													</span>
 												</div>
 												<div className="flex justify-between">
 													<span className="text-slate-400">New Stake:</span>
-													<span className="text-white">
+													<span className="text-white flex items-center">
+														<img src="./karma_token_icon.svg" alt="Karma Token" className="w-4 h-4 mr-1" />
 														{userData.stakeAmount +
 															(parseFloat(stakeInput) || 0)}{' '}
 														KARMA
@@ -344,13 +355,15 @@ export default function Staking() {
 											<div className="space-y-2 text-sm">
 												<div className="flex justify-between">
 													<span className="text-slate-400">Current Stake:</span>
-													<span className="text-white">
-														{userData.stakeAmount} KARMA
-													</span>
+												<span className="text-white flex items-center">
+													<img src="./karma_token_icon.svg" alt="Karma Token" className="w-4 h-4 mr-1" />
+													{userData.stakeAmount} KARMA
+												</span>
 												</div>
 												<div className="flex justify-between">
 													<span className="text-slate-400">New Stake:</span>
-													<span className="text-white">
+													<span className="text-white flex items-center">
+														<img src="./karma_token_icon.svg" alt="Karma Token" className="w-4 h-4 mr-1" />
 														{Math.max(
 															0,
 															userData.stakeAmount -
