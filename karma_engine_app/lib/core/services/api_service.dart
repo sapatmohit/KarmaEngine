@@ -15,9 +15,9 @@ class ApiService {
 
   // HTTP headers
   Map<String, String> get _headers => {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-  };
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      };
 
   // Generic HTTP request handler
   Future<Map<String, dynamic>> _makeRequest(
