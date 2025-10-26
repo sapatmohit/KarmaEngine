@@ -79,9 +79,7 @@ const Navigation = () => {
       {/* Left Section */}
       <div className="flex items-center space-x-10">
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-            <span className="text-white font-bold text-sm">K</span>
-          </div>
+          <img src="./karma_token_icon.svg" alt="Karma Token" className="w-6 h-6 mr-1 rounded-full" />
           <span className="text-white text-xl font-bold">Karma Engine</span>
         </div>
         
