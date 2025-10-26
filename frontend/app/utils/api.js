@@ -1,6 +1,6 @@
 // API utility functions for KarmaChain frontend
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 // User API functions
 export const userAPI = {

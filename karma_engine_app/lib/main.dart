@@ -12,11 +12,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-    title: 'Karma Engine',
-    theme: AppTheme.lightTheme,
-    darkTheme: AppTheme.darkTheme,
-    themeMode: ThemeMode.system,
-    home: const SplashScreen(),
-    debugShowCheckedModeBanner: false,
-  );
+        title: 'Karma Engine',
+        theme: AppTheme.darkTheme,
+        themeMode: ThemeMode.dark,
+        home: const SplashScreen(),
+        debugShowCheckedModeBanner: false,
+      );
 }
