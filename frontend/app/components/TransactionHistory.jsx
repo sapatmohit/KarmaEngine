@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useKarma } from '../contexts/KarmaContext';
 import ApiService from '../services/api';
@@ -22,9 +22,22 @@ const TransactionHistory = () => {
       
       try {
         setLoading(true);
-        // For now, we'll use the activities from KarmaContext
-        // In a real implementation, this would come from a dedicated transactions API
-        setTransactions(activities.slice(0, displayedTransactions));
+        // Fetch real transaction data from the backend
+        const activitiesData = await ApiService.getUserTransactions(user.walletAddress);
+        const activityTransactions = activitiesData.activities || [];
+        
+        // Format the transactions for display
+        const formattedTransactions = activityTransactions.map(activity => ({
+          id: activity.id,
+          timestamp: activity.timestamp,
+          type: activity.type,
+          value: activity.value,
+          multiplier: activity.multiplier,
+          finalKarma: activity.finalKarma,
+          metadata: activity.metadata
+        }));
+        
+        setTransactions(formattedTransactions.slice(0, displayedTransactions));
       } catch (err) {
         setError(err.message);
         console.error('Error fetching transactions:', err);
@@ -34,7 +47,7 @@ const TransactionHistory = () => {
     };
 
     fetchTransactions();
-  }, [user, activities, displayedTransactions]);
+  }, [user, displayedTransactions]);
 
   const handleLoadMore = () => {
     setDisplayedTransactions(prev => prev + 8);
