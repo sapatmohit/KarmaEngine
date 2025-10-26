@@ -39,21 +39,21 @@ class ApiService {
 
 	// User endpoints
 	async registerUser(userData) {
-		return this.request('/users/register', {
+		return this.request('/api/users/register', {
 			method: 'POST',
 			body: JSON.stringify(userData),
 		});
 	}
 
 	async registerEmailUser(userData) {
-		return this.request('/users/register-email', {
+		return this.request('/api/users/register-email', {
 			method: 'POST',
 			body: JSON.stringify(userData),
 		});
 	}
 
 	async loginEmailUser(credentials) {
-		return this.request('/users/login', {
+		return this.request('/api/users/login', {
 			method: 'POST',
 			body: JSON.stringify(credentials),
 		});
@@ -61,7 +61,7 @@ class ApiService {
 
 	async getCurrentUser() {
 		const token = localStorage.getItem('authToken');
-		return this.request('/users/me', {
+		return this.request('/api/users/me', {
 			headers: {
 				Authorization: `Bearer ${token}`,
 			},
@@ -69,18 +69,18 @@ class ApiService {
 	}
 
 	async getUserByWallet(walletAddress) {
-		return this.request(`/users/wallet/${walletAddress}`);
+		return this.request(`/api/users/wallet/${walletAddress}`);
 	}
 
 	async updateUserProfile(walletAddress, profileData) {
-		return this.request(`/users/profile/${walletAddress}`, {
+		return this.request(`/api/users/profile/${walletAddress}`, {
 			method: 'PUT',
 			body: JSON.stringify(profileData),
 		});
 	}
 
 	async updateUserKarma(walletAddress, karmaPoints) {
-		return this.request(`/users/${walletAddress}/karma`, {
+		return this.request(`/api/users/${walletAddress}/karma`, {
 			method: 'PUT',
 			body: JSON.stringify({ karmaPoints }),
 		});
@@ -88,11 +88,11 @@ class ApiService {
 
 	// Activity endpoints
 	async getUserActivities(walletAddress) {
-		return this.request(`/activities/user/${walletAddress}`);
+		return this.request(`/api/activities/user/${walletAddress}`);
 	}
 
 	async recordActivity(activityData) {
-		return this.request('/activities', {
+		return this.request('/api/activities', {
 			method: 'POST',
 			body: JSON.stringify(activityData),
 		});
@@ -100,35 +100,35 @@ class ApiService {
 
 	// Karma endpoints
 	async getKarmaHistory(walletAddress) {
-		return this.request(`/karma/history/${walletAddress}`);
+		return this.request(`/api/karma/history/${walletAddress}`);
 	}
 
 	async getLeaderboard() {
-		return this.request('/karma/leaderboard');
+		return this.request('/api/karma/leaderboard');
 	}
 
 	// Staking endpoints
 	async stakeKarma(walletAddress, amount) {
-		return this.request('/staking/stake', {
+		return this.request('/api/staking/stake', {
 			method: 'POST',
 			body: JSON.stringify({ walletAddress, amount }),
 		});
 	}
 
 	async unstakeKarma(walletAddress, amount) {
-		return this.request('/staking/unstake', {
+		return this.request('/api/staking/unstake', {
 			method: 'POST',
 			body: JSON.stringify({ walletAddress, amount }),
 		});
 	}
 
 	async getStakingInfo(walletAddress) {
-		return this.request(`/staking/${walletAddress}`);
+		return this.request(`/api/staking/${walletAddress}`);
 	}
 
 	// Transaction history endpoints
 	async getUserTransactions(walletAddress) {
-		return this.request(`/activities/user/${walletAddress}`);
+		return this.request(`/api/activities/user/${walletAddress}`);
 	}
 }
 

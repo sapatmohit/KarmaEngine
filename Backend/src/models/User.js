@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema({
 	},
 	name: {
 		type: String,
-		required: true,
+		required: false,
 		trim: true,
 	},
 	dateOfBirth: {
@@ -43,6 +43,10 @@ const userSchema = new mongoose.Schema({
 		facebook: { type: String, default: '' },
 		twitter: { type: String, default: '' },
 	},
+	// Instagram-specific fields for karma tracking
+	posts: [String], // Array of Instagram post IDs
+	comments: [String], // Array of Instagram comment IDs or texts
+	likes: [String], // Array of Instagram usernames who liked posts
 	karmaPoints: {
 		type: Number,
 		default: 0,

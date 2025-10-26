@@ -190,6 +190,48 @@ const updateUserProfile = async (req, res) => {
 };
 
 /**
+ * Update user karma points
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const updateUserKarma = async (req, res) => {
+	try {
+		const { walletAddress } = req.params;
+		const { karmaPoints } = req.body;
+
+		// Find user
+		const user = await User.findOne({ walletAddress });
+		if (!user) {
+			return res.status(404).json({ message: 'User not found' });
+		}
+
+		// Update karma points
+		user.karmaPoints = karmaPoints;
+		user.lastActivity = Date.now();
+		
+		// Save updated user
+		await user.save();
+
+		res.json({
+			message: 'User karma updated successfully',
+			user: {
+				id: user._id,
+				walletAddress: user.walletAddress,
+				name: user.name,
+				username: user.username,
+				avatar: user.avatar,
+				karmaPoints: user.karmaPoints,
+				stakedAmount: user.stakedAmount,
+				multiplier: user.multiplier,
+			},
+		});
+	} catch (error) {
+		console.error('Update karma error:', error);
+		res.status(500).json({ message: 'Server error while updating karma' });
+	}
+};
+
+/**
  * Register user with email and password
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
@@ -362,4 +404,5 @@ module.exports = {
 	getUserByWallet,
 	getCurrentUser,
 	updateUserProfile,
+	updateUserKarma,
 };

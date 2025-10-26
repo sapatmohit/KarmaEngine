@@ -7,7 +7,7 @@ export const userAPI = {
   // Register a new user
   registerUser: async (payload) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/users/register`, {
+      const response = await fetch(`${API_BASE_URL}/api/users/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -33,7 +33,7 @@ export const userAPI = {
   // Get user by wallet address
   getUserByWallet: async (walletAddress) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/users/${walletAddress}`);
+      const response = await fetch(`${API_BASE_URL}/api/users/${walletAddress}`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -49,7 +49,7 @@ export const userAPI = {
   // Update user karma points
   updateUserKarma: async (walletAddress, karmaPoints) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/users/${walletAddress}/karma`, {
+      const response = await fetch(`${API_BASE_URL}/api/users/${walletAddress}/karma`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -74,7 +74,7 @@ export const karmaAPI = {
   // Get user's karma balance
   getKarmaBalance: async (walletAddress) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/karma/balance/${walletAddress}`);
+      const response = await fetch(`${API_BASE_URL}/api/karma/balance/${walletAddress}`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -90,7 +90,7 @@ export const karmaAPI = {
   // Sync user's karma between database and blockchain
   syncKarma: async (walletAddress) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/karma/sync/${walletAddress}`, {
+      const response = await fetch(`${API_BASE_URL}/api/karma/sync/${walletAddress}`, {
         method: 'POST',
       });
       
@@ -108,7 +108,7 @@ export const karmaAPI = {
   // Get leaderboard
   getLeaderboard: async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/karma/leaderboard`);
+      const response = await fetch(`${API_BASE_URL}/api/karma/leaderboard`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -127,7 +127,7 @@ export const activityAPI = {
   // Record a new activity
   recordActivity: async (activityData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/activities`, {
+      const response = await fetch(`${API_BASE_URL}/api/activities`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -149,7 +149,7 @@ export const activityAPI = {
   // Get user activities
   getUserActivities: async (walletAddress) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/activities/${walletAddress}`);
+      const response = await fetch(`${API_BASE_URL}/api/activities/${walletAddress}`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -165,7 +165,7 @@ export const activityAPI = {
   // Get activity statistics
   getActivityStats: async (walletAddress) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/activities/${walletAddress}/stats`);
+      const response = await fetch(`${API_BASE_URL}/api/activities/${walletAddress}/stats`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -184,7 +184,7 @@ export const stakingAPI = {
   // Stake tokens
   stakeTokens: async (stakeData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/staking/stake`, {
+      const response = await fetch(`${API_BASE_URL}/api/staking/stake`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -206,7 +206,7 @@ export const stakingAPI = {
   // Unstake tokens
   unstakeTokens: async (unstakeData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/staking/unstake`, {
+      const response = await fetch(`${API_BASE_URL}/api/staking/unstake`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -228,7 +228,7 @@ export const stakingAPI = {
   // Get user staking records
   getUserStakingRecords: async (walletAddress) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/staking/${walletAddress}`);
+      const response = await fetch(`${API_BASE_URL}/api/staking/${walletAddress}`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

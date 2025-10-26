@@ -5,6 +5,9 @@ const karmaController = require('../controllers/karmaController');
 // Get user's karma balance
 router.get('/balance/:walletAddress', karmaController.getKarmaBalance);
 
+// Get user's karma history
+router.get('/history/:walletAddress', karmaController.getKarmaHistory);
+
 // Sync user's karma between database and blockchain
 router.post('/sync/:walletAddress', karmaController.syncKarma);
 

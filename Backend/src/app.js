@@ -24,11 +24,16 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-app.use('/users', userRoutes);
-app.use('/activities', activityRoutes);
-app.use('/staking', stakingRoutes);
-app.use('/karma', karmaRoutes);
-app.use('/instagram', instagramRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/activities', activityRoutes);
+app.use('/api/staking', stakingRoutes);
+app.use('/api/karma', karmaRoutes);
+app.use('/api/instagram', instagramRoutes);
+
+// Add a simple test route
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'API is working!' });
+});
 
 // Error handling middleware
 app.use(errorHandler);

@@ -23,4 +23,7 @@ router.get('/me', auth, userController.getCurrentUser);
 // Update user profile
 router.put('/profile/:walletAddress', userController.updateUserProfile);
 
+// Update user karma
+router.put('/:walletAddress/karma', userController.updateUserKarma);
+
 module.exports = router;

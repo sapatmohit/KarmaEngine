@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Activity = require('../models/Activity');
 const { getKarmaBalance, getStakingInfo } = require('../services/blockchainService');
 
 /**
@@ -31,6 +32,47 @@ const getKarmaBalanceController = async (req, res) => {
   } catch (error) {
     console.error('Get karma balance error:', error);
     res.status(500).json({ message: 'Server error while fetching karma balance' });
+  }
+};
+
+/**
+ * Get user's karma history
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const getKarmaHistory = async (req, res) => {
+  try {
+    const { walletAddress } = req.params;
+    const { limit = 20 } = req.query;
+
+    // Find user in database
+    const user = await User.findOne({ walletAddress });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Get user's activities sorted by timestamp
+    const activities = await Activity.find({ userId: user._id })
+      .sort({ timestamp: -1 })
+      .limit(parseInt(limit));
+
+    // Format history data
+    const history = activities.map(activity => ({
+      id: activity._id,
+      type: activity.type,
+      value: activity.value,
+      multiplier: activity.multiplier,
+      finalKarma: activity.finalKarma,
+      timestamp: activity.timestamp,
+      metadata: activity.metadata
+    }));
+
+    res.json({
+      history
+    });
+  } catch (error) {
+    console.error('Get karma history error:', error);
+    res.status(500).json({ message: 'Server error while fetching karma history' });
   }
 };
 
@@ -107,6 +149,7 @@ const getLeaderboard = async (req, res) => {
 
 module.exports = {
   getKarmaBalance: getKarmaBalanceController,
+  getKarmaHistory,
   syncKarma,
   getLeaderboard
 };
