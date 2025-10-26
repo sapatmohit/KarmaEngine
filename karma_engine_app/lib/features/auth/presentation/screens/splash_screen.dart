@@ -3,6 +3,7 @@ import 'package:karma_engine_app/features/auth/presentation/screens/login_screen
 import 'package:karma_engine_app/features/dashboard/presentation/widgets/main_layout.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:karma_engine_app/core/utils/constants.dart';
+import 'package:karma_engine_app/core/utils/theme.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -20,7 +21,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
-    
+
     _animationController = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
@@ -73,7 +74,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).primaryColor,
+      backgroundColor: AppTheme.darkBackground,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -89,17 +90,31 @@ class _SplashScreenState extends State<SplashScreen>
                     child: Container(
                       width: 120,
                       height: 120,
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [
+                            AppTheme.primaryBlue,
+                            AppTheme.secondaryPink
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.primaryBlue.withOpacity(0.3),
+                            blurRadius: 30,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
                       ),
-                      child: Center(
+                      child: const Center(
                         child: Text(
-                          'KE',
+                          'K',
                           style: TextStyle(
                             fontSize: 48,
                             fontWeight: FontWeight.bold,
-                            color: Theme.of(context).primaryColor,
+                            color: Colors.white,
                           ),
                         ),
                       ),
@@ -108,21 +123,20 @@ class _SplashScreenState extends State<SplashScreen>
                 );
               },
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
 
-            // App name
+            // App name with gradient
             FadeTransition(
               opacity: _fadeAnimation,
-              child: const Text(
+              child: AppTheme.textGradient(
                 'Karma Engine',
-                style: TextStyle(
+                const TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
                 ),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
 
             // Tagline
             FadeTransition(
@@ -131,7 +145,7 @@ class _SplashScreenState extends State<SplashScreen>
                 'Decentralized Reputation System',
                 style: TextStyle(
                   fontSize: 16,
-                  color: Colors.white70,
+                  color: Colors.grey,
                 ),
               ),
             ),
@@ -141,7 +155,8 @@ class _SplashScreenState extends State<SplashScreen>
             FadeTransition(
               opacity: _fadeAnimation,
               child: const CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryBlue),
+                strokeWidth: 3,
               ),
             ),
           ],

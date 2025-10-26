@@ -1,10 +1,15 @@
 class Constants {
   static const String appName = 'Karma Engine';
   static const String baseUrl =
-      'http://localhost:3000'; // Change this to your backend URL
+      'http://172.27.0.1:5000'; // Docker network IP - try this first
+  // Alternative IPs to try if this doesn't work:
+  // 'http://10.0.2.2:5000' - Android emulator
+  // 'http://172.28.4.94:5000' - Your local network IP
+  // 'http://localhost:5000' - iOS simulator
 
   // SharedPreferences keys
   static const String walletAddressKey = 'wallet_address';
+  static const String userEmailKey = 'user_email';
   static const String userNameKey = 'user_name';
   static const String userAvatarKey = 'user_avatar';
 
