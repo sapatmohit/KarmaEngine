@@ -8,8 +8,35 @@ const Navigation = () => {
   const pathname = usePathname();
   const router = useRouter();
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
   const [user, setUser] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  // Mock data for search
+  const mockSearchData = [
+    { id: 1, type: 'user', name: 'CryptoKing', avatar: '👤' },
+    { id: 2, type: 'user', name: 'DeFiMaster', avatar: '👤' },
+    { id: 3, type: 'user', name: 'BlockchainPro', avatar: '👤' },
+    { id: 4, type: 'activity', name: 'Post Activity', description: 'Earn karma from posts' },
+    { id: 5, type: 'activity', name: 'Comment Activity', description: 'Earn karma from comments' },
+    { id: 6, type: 'activity', name: 'Like Activity', description: 'Earn karma from likes' },
+    { id: 7, type: 'activity', name: 'Repost Activity', description: 'Earn karma from reposts' },
+  ];
+
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+    if (query.trim() === '') {
+      setSearchResults([]);
+      return;
+    }
+
+    const filtered = mockSearchData.filter(item =>
+      item.name.toLowerCase().includes(query.toLowerCase()) ||
+      (item.description && item.description.toLowerCase().includes(query.toLowerCase()))
+    );
+    setSearchResults(filtered);
+  };
 
   useEffect(() => {
     // Check if user is logged in
@@ -76,8 +103,8 @@ const Navigation = () => {
       </div>
       
       {/* Center Search Bar */}
-      <div className="flex-1 flex justify-center px-8">
-        <div className={`relative ${isSearchFocused ? 'w-[28rem]' : 'w-96'} transition-all duration-300`}>
+      <div className="flex-1 flex justify-center px-4">
+        <div className={`relative w-full max-w-md transition-all duration-300`}>
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -86,13 +113,68 @@ const Navigation = () => {
           <input
             type="text"
             placeholder="Search karma activities and users"
+            value={searchQuery}
+            onChange={(e) => handleSearch(e.target.value)}
             className="w-full bg-gray-800/50 border border-gray-700 rounded-xl pl-10 pr-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             onFocus={() => setIsSearchFocused(true)}
-            onBlur={() => setIsSearchFocused(false)}
+            onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
           />
           <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
             <kbd className="px-2 py-1 text-xs text-gray-400 bg-gray-700 rounded">/</kbd>
           </div>
+
+          {/* Search Results Dropdown */}
+          {isSearchFocused && searchQuery.trim() !== '' && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl z-[100] max-h-80 overflow-y-auto">
+              {searchResults.length > 0 ? (
+                <div className="py-2">
+                  {searchResults.map((result) => (
+                    <button
+                      key={result.id}
+                      onClick={() => {
+                        setSearchQuery('');
+                        setSearchResults([]);
+                        setIsSearchFocused(false);
+                      }}
+                      className="w-full px-4 py-3 text-left hover:bg-gray-800/50 transition-colors border-b border-gray-800/30 last:border-b-0"
+                    >
+                      <div className="flex items-center space-x-3">
+                        {result.type === 'user' ? (
+                          <>
+                            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-sm">
+                              {result.avatar}
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-white">{result.name}</p>
+                              <p className="text-xs text-gray-400">User</p>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center text-sm">
+                              ⚡
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-white">{result.name}</p>
+                              <p className="text-xs text-gray-400">{result.description}</p>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="px-4 py-8 text-center">
+                  <svg className="w-12 h-12 mx-auto mb-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <p className="text-gray-400 text-sm">No results found for "{searchQuery}"</p>
+                  <p className="text-gray-500 text-xs mt-1">Try searching for users or activities</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
       
