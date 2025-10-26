@@ -19,8 +19,8 @@ body {
     background: rgba(30, 41, 59, 0.4);
     border-radius: 12px;
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
+    /* -webkit-backdrop-filter: blur(5px); */
+    /* backdrop-filter: blur(5px); */
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
@@ -28,8 +28,8 @@ body {
     background: rgba(30, 41, 59, 0.6);
     border-radius: 12px;
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
     border: 1px solid rgba(255, 255, 255, 0.15);
   }
 
@@ -44,8 +44,8 @@ body {
     background: rgba(15, 23, 42, 0.6);
     border-radius: 16px;
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    /* -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px); */
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
@@ -53,8 +53,8 @@ body {
     background: rgba(30, 41, 59, 0.6);
     border-radius: 12px;
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     transition: all 0.3s ease;
   }
@@ -69,8 +69,8 @@ body {
     background: linear-gradient(90deg, rgba(14, 165, 233, 0.6) 0%, rgba(2, 132, 199, 0.6) 100%);
     border-radius: 12px;
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
     border: 1px solid rgba(14, 165, 233, 0.3);
     transition: all 0.3s ease;
   }
