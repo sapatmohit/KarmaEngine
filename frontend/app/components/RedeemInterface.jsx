@@ -7,9 +7,6 @@ const RedeemInterface = () => {
   const [activeTab, setActiveTab] = useState('redeem');
   const [karmaAmount, setKarmaAmount] = useState('');
   const [xlmAmount, setXlmAmount] = useState('');
-  const [selectedKarmaToken, setSelectedKarmaToken] = useState('KARMA');
-  const [selectedXlmToken, setSelectedXlmToken] = useState('XLM');
-  const [isTokenDropdownOpen, setIsTokenDropdownOpen] = useState(false);
 
   // Mock exchange rate (1 KARMA = 0.1 XLM)
   const exchangeRate = 0.1;
@@ -96,45 +93,12 @@ const RedeemInterface = () => {
               >
                 MAX
               </button>
-              <div className="relative">
-                <button 
-                  onClick={() => setIsTokenDropdownOpen(!isTokenDropdownOpen)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition-colors"
-                >
-                  <span>{selectedKarmaToken}</span>
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </button>
-                {isTokenDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-40 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-50">
-                    <button
-                      onClick={() => {
-                        setSelectedKarmaToken('KARMA');
-                        setIsTokenDropdownOpen(false);
-                      }}
-                      className="w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700 transition-colors flex items-center space-x-2"
-                    >
-                      <div className="w-6 h-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                        <span className="text-xs font-bold">K</span>
-                      </div>
-                      <span>KARMA</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSelectedKarmaToken('XLM');
-                        setIsTokenDropdownOpen(false);
-                      }}
-                      className="w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700 transition-colors flex items-center space-x-2 border-t border-gray-700"
-                    >
-                      <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                        <span className="text-xs font-bold">X</span>
-                      </div>
-                      <span>XLM</span>
-                    </button>
-                  </div>
-                )}
-              </div>
+              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition-colors">
+                <div className="w-6 h-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                  <span className="text-xs font-bold">K</span>
+                </div>
+                <span>KARMA</span>
+              </button>
             </div>
           </div>
         </div>
@@ -159,17 +123,12 @@ const RedeemInterface = () => {
                 ≈ ${(parseFloat(xlmAmount || 0) * 0.5).toFixed(2)} USD
               </div>
             </div>
-            <div className="flex items-center space-x-2 ml-4">
-              <button className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition-colors">
-                <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                  <span className="text-xs font-bold text-white">X</span>
-                </div>
-                <span>XLM</span>
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-              </button>
-            </div>
+            <button className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition-colors">
+              <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                <span className="text-xs font-bold text-white">X</span>
+              </div>
+              <span>XLM</span>
+            </button>
           </div>
         </div>
 

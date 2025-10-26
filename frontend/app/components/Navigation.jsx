@@ -51,12 +51,12 @@ const Navigation = () => {
     <nav className="bg-gray-900/50 backdrop-blur-md border-b border-gray-800 py-4 px-6 flex justify-between items-center mb-8">
       {/* Left Section */}
       <div className="flex items-center space-x-10">
-        <Link href="/" className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2">
           <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-sm">K</span>
           </div>
           <span className="text-white text-xl font-bold">Karma Engine</span>
-        </Link>
+        </div>
         
         <div className="hidden md:flex space-x-6">
           {navItems.map((item) => (
@@ -98,13 +98,6 @@ const Navigation = () => {
       
       {/* Right Section */}
       <div className="flex items-center space-x-4">
-        {/* Menu Button */}
-        <button className="p-2 text-gray-400 hover:text-white transition-colors">
-          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 16a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
-          </svg>
-        </button>
-
         {/* User Profile or Auth Buttons */}
         {user ? (
           <div className="relative">
