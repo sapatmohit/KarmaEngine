@@ -2,14 +2,21 @@
 
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { useKarma } from '../contexts/KarmaContext';
 
 const RedeemInterface = () => {
+  const { karmaBalance, redeemKarma } = useKarma();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('redeem');
   const [karmaAmount, setKarmaAmount] = useState('');
   const [xlmAmount, setXlmAmount] = useState('');
+  const [isRedeeming, setIsRedeeming] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
-  // Mock exchange rate (1 KARMA = 0.1 XLM)
-  const exchangeRate = 0.1;
+  // Exchange rate from smart contract (10 karma = 1 XLM)
+  const exchangeRate = 0.1; // 1 KARMA = 0.1 XLM
 
   const handleKarmaChange = (value) => {
     setKarmaAmount(value);
@@ -30,14 +37,40 @@ const RedeemInterface = () => {
   };
 
   const handleMaxKarma = () => {
-    setKarmaAmount('1250'); // Mock max karma
-    setXlmAmount((1250 * exchangeRate).toFixed(6));
+    setKarmaAmount(karmaBalance.toString());
+    setXlmAmount((karmaBalance * exchangeRate).toFixed(6));
   };
 
-  const handleRedeem = () => {
-    if (karmaAmount && xlmAmount) {
-      // Handle redeem logic here
-      console.log(`Redeeming ${karmaAmount} KARMA for ${xlmAmount} XLM`);
+  const handleRedeem = async () => {
+    if (!karmaAmount || !xlmAmount) {
+      setError('Please enter an amount to redeem');
+      return;
+    }
+
+    const karmaValue = parseFloat(karmaAmount);
+    if (karmaValue <= 0) {
+      setError('Please enter a valid amount');
+      return;
+    }
+
+    if (karmaValue > karmaBalance) {
+      setError('Insufficient karma balance');
+      return;
+    }
+
+    setIsRedeeming(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      await redeemKarma(karmaValue);
+      setSuccess(`Successfully redeemed ${karmaAmount} KARMA for ${xlmAmount} XLM!`);
+      setKarmaAmount('');
+      setXlmAmount('');
+    } catch (err) {
+      setError(err.message || 'Failed to redeem karma');
+    } finally {
+      setIsRedeeming(false);
     }
   };
 
@@ -48,13 +81,26 @@ const RedeemInterface = () => {
         <h3 className="text-lg font-bold text-white">Redeem Karma</h3>
       </div>
 
+      {/* Success/Error Messages */}
+      {success && (
+        <div className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 text-sm">
+          {success}
+        </div>
+      )}
+      
+      {error && (
+        <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+          {error}
+        </div>
+      )}
+
       {/* Main Swap Interface */}
       <div className="space-y-4">
         {/* Redeem Panel (Karma) */}
         <div className="bg-gray-800/30 rounded-xl p-6">
           <div className="flex items-center justify-between mb-4">
             <span className="text-sm text-gray-400">Redeem</span>
-            <span className="text-sm text-gray-400">Balance: 1,250 KARMA</span>
+            <span className="text-sm text-gray-400">Balance: {karmaBalance?.toLocaleString() || 0} KARMA</span>
           </div>
           <div className="flex items-center justify-between">
             <div className="flex-1">
@@ -132,9 +178,17 @@ const RedeemInterface = () => {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={handleRedeem}
-          className="w-full py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl font-medium text-lg transition-all duration-200 transform hover:scale-105"
+          disabled={isRedeeming}
+          className="w-full py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl font-medium text-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50"
         >
-          Redeem
+          {isRedeeming ? (
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+              Redeeming...
+            </div>
+          ) : (
+            'Redeem'
+          )}
         </motion.button>
       </div>
     </div>

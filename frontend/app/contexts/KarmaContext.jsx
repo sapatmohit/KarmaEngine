@@ -1,8 +1,8 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect } from 'react';
-import { useAuth } from './AuthContext';
+import { createContext, useContext, useEffect, useState } from 'react';
 import ApiService from '../services/api';
+import { useAuth } from './AuthContext';
 
 const KarmaContext = createContext();
 
@@ -15,7 +15,7 @@ export const useKarma = () => {
 };
 
 export const KarmaProvider = ({ children }) => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, setUser } = useAuth();
   const [karmaBalance, setKarmaBalance] = useState(0);
   const [stakeAmount, setStakeAmount] = useState(0);
   const [activities, setActivities] = useState([]);
@@ -102,9 +102,22 @@ export const KarmaProvider = ({ children }) => {
     try {
       const response = await ApiService.stakeKarma(user.walletAddress, amount);
       
-      // Update local state
-      setKarmaBalance(prev => prev - amount);
-      setStakeAmount(prev => prev + amount);
+      // Update local state with the new values from the response
+      setKarmaBalance(response.user.karmaPoints);
+      setStakeAmount(response.user.stakedAmount);
+      
+      // Update the user in the AuthContext
+      if (setUser) {
+        setUser(prevUser => ({
+          ...prevUser,
+          karmaPoints: response.user.karmaPoints,
+          stakedAmount: response.user.stakedAmount,
+          multiplier: response.user.multiplier
+        }));
+      }
+      
+      // Reload user data to update activities
+      await loadUserData();
       
       return response;
     } catch (err) {
@@ -125,14 +138,61 @@ export const KarmaProvider = ({ children }) => {
     try {
       const response = await ApiService.unstakeKarma(user.walletAddress, amount);
       
-      // Update local state
-      setKarmaBalance(prev => prev + amount);
-      setStakeAmount(prev => prev - amount);
+      // Update local state with the new values from the response
+      setKarmaBalance(response.user.karmaPoints);
+      setStakeAmount(response.user.stakedAmount);
+      
+      // Update the user in the AuthContext
+      if (setUser) {
+        setUser(prevUser => ({
+          ...prevUser,
+          karmaPoints: response.user.karmaPoints,
+          stakedAmount: response.user.stakedAmount,
+          multiplier: response.user.multiplier
+        }));
+      }
+      
+      // Reload user data to update activities
+      await loadUserData();
       
       return response;
     } catch (err) {
       setError(err.message);
       console.error('Error unstaking karma:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const redeemKarma = async (karmaAmount) => {
+    if (!user?.walletAddress) return;
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      // Call the redeem endpoint
+      const response = await ApiService.redeemKarma(user.walletAddress, karmaAmount);
+      
+      // Update local state with the new values from the response
+      setKarmaBalance(response.user.remainingKarmaPoints);
+      
+      // Update the user in the AuthContext
+      if (setUser) {
+        setUser(prevUser => ({
+          ...prevUser,
+          karmaPoints: response.user.remainingKarmaPoints
+        }));
+      }
+      
+      // Reload user data to update activities
+      await loadUserData();
+      
+      return response;
+    } catch (err) {
+      setError(err.message);
+      console.error('Error redeeming karma:', err);
       throw err;
     } finally {
       setIsLoading(false);
@@ -149,6 +209,7 @@ export const KarmaProvider = ({ children }) => {
     recordActivity,
     stakeKarma,
     unstakeKarma,
+    redeemKarma,
     loadUserData,
   };
 

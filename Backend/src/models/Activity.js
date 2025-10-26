@@ -14,7 +14,7 @@ const activitySchema = new mongoose.Schema({
   type: {
     type: String,
     required: true,
-    enum: ['post', 'comment', 'like', 'repost', 'report']
+    enum: ['post', 'comment', 'like', 'repost', 'report', 'stake', 'unstake', 'redeem']
   },
   value: {
     type: Number,

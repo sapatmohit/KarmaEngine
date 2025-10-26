@@ -17,16 +17,21 @@ import GlassButton from '../components/GlassButton';
 import GlassCard from '../components/GlassCard';
 import MainLayout from '../components/MainLayout';
 import TierIndicator from '../components/TierIndicator';
+import { useAuth } from '../contexts/AuthContext';
 import { useKarma } from '../contexts/KarmaContext';
 
 export default function Staking() {
-	const { karmaBalance, stakeAmount, stakeTokens, unstakeTokens } = useKarma();
+	const { karmaBalance, stakeAmount, stakeKarma, unstakeKarma } = useKarma();
+	const { user } = useAuth();
 	const [stakeInput, setStakeInput] = useState('');
 	const [unstakeInput, setUnstakeInput] = useState('');
 	const [activeTab, setActiveTab] = useState('stake'); // 'stake' or 'unstake'
+	const [isProcessing, setIsProcessing] = useState(false);
+	const [error, setError] = useState('');
+	const [success, setSuccess] = useState('');
 
 	const userData = {
-		walletAddress: '0x742d35Cc6634C0532925a3b8D4C0532925a3b8D4',
+		walletAddress: user?.walletAddress || '0x742d35Cc6634C0532925a3b8D4C0532925a3b8D4',
 		karmaBalance: karmaBalance,
 		stakeAmount: stakeAmount,
 		tier:
@@ -43,7 +48,7 @@ export default function Staking() {
 			name: 'Regular',
 			min: 0,
 			max: 100,
-			multiplier: '1x',
+			multiplier: '1.1x',
 			color: 'from-gray-500 to-gray-700',
 			benefits: ['Base karma rewards', 'Standard influence'],
 			icon: Shield,
@@ -103,25 +108,57 @@ export default function Staking() {
 
 	const handleStake = async (e) => {
 		e.preventDefault();
-		if (!stakeInput || parseFloat(stakeInput) <= 0) return;
+		if (!stakeInput || parseFloat(stakeInput) <= 0) {
+			setError('Please enter a valid amount to stake');
+			return;
+		}
+
+		const stakeAmount = parseFloat(stakeInput);
+		if (stakeAmount > karmaBalance) {
+			setError('Insufficient karma balance');
+			return;
+		}
+
+		setIsProcessing(true);
+		setError('');
+		setSuccess('');
 
 		try {
-			await stakeTokens(stakeInput);
+			await stakeKarma(stakeAmount);
+			setSuccess(`Successfully staked ${stakeAmount} KARMA!`);
 			setStakeInput('');
 		} catch (error) {
-			console.error('Error staking tokens:', error);
+			setError(error.message || 'Failed to stake tokens');
+		} finally {
+			setIsProcessing(false);
 		}
 	};
 
 	const handleUnstake = async (e) => {
 		e.preventDefault();
-		if (!unstakeInput || parseFloat(unstakeInput) <= 0) return;
+		if (!unstakeInput || parseFloat(unstakeInput) <= 0) {
+			setError('Please enter a valid amount to unstake');
+			return;
+		}
+
+		const unstakeAmount = parseFloat(unstakeInput);
+		if (unstakeAmount > stakeAmount) {
+			setError('Insufficient staked amount');
+			return;
+		}
+
+		setIsProcessing(true);
+		setError('');
+		setSuccess('');
 
 		try {
-			await unstakeTokens(unstakeInput);
+			await unstakeKarma(unstakeAmount);
+			setSuccess(`Successfully unstaked ${unstakeAmount} KARMA!`);
 			setUnstakeInput('');
 		} catch (error) {
-			console.error('Error unstaking tokens:', error);
+			setError(error.message || 'Failed to unstake tokens');
+		} finally {
+			setIsProcessing(false);
 		}
 	};
 
@@ -147,6 +184,19 @@ export default function Staking() {
 
 				{/* Main Content */}
 				<div className="p-6 space-y-8">
+					{/* Success/Error Messages */}
+					{success && (
+						<div className="p-3 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 text-sm">
+							{success}
+						</div>
+					)}
+					
+					{error && (
+						<div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+							{error}
+						</div>
+					)}
+
 					{/* Stats Cards */}
 					<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 						{stakingStats.map((stat, index) => (
@@ -302,7 +352,7 @@ export default function Staking() {
 																	(parseFloat(stakeInput) || 0) >=
 															  100
 															? '1.5x'
-															: '1x'}
+															: '1.1x'}
 													</span>
 												</div>
 											</div>
@@ -312,8 +362,16 @@ export default function Staking() {
 											variant="primary"
 											className="w-full py-3"
 											type="submit"
+											disabled={isProcessing}
 										>
-											Stake KARMA
+											{isProcessing ? (
+												<div className="flex items-center justify-center">
+													<div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+													Staking...
+												</div>
+											) : (
+												'Stake KARMA'
+											)}
 										</GlassButton>
 									</form>
 								) : (
@@ -405,7 +463,7 @@ export default function Staking() {
 																		(parseFloat(unstakeInput) || 0)
 															  ) >= 100
 															? '1.5x'
-															: '1x'}
+															: '1.1x'}
 													</span>
 												</div>
 											</div>
@@ -415,8 +473,16 @@ export default function Staking() {
 											variant="primary"
 											className="w-full py-3"
 											type="submit"
+											disabled={isProcessing}
 										>
-											Unstake KARMA
+											{isProcessing ? (
+												<div className="flex items-center justify-center">
+													<div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+													Unstaking...
+												</div>
+											) : (
+												'Unstake KARMA'
+											)}
 										</GlassButton>
 									</form>
 								)}

@@ -12,6 +12,7 @@ const {
 // Initialize Soroban RPC client
 let sorobanClient = null;
 let contract = null;
+let adminKeypair = null;
 
 // Initialize the Soroban client and contract
 const initializeSoroban = () => {
@@ -23,6 +24,12 @@ const initializeSoroban = () => {
   try {
     sorobanClient = new rpc.Server(config.blockchain.rpcUrl, { allowHttp: true });
     contract = new Contract(config.blockchain.contractAddress);
+    
+    // Initialize admin keypair if available
+    if (process.env.ACCOUNT_SECRET_KEY) {
+      adminKeypair = Keypair.fromSecret(process.env.ACCOUNT_SECRET_KEY);
+    }
+    
     console.log('Soroban client initialized successfully');
   } catch (error) {
     console.error('Failed to initialize Soroban client:', error);
@@ -31,6 +38,62 @@ const initializeSoroban = () => {
 
 // Initialize on module load
 initializeSoroban();
+
+/**
+ * Helper function to create and submit a transaction
+ * @param {Object} params - Transaction parameters
+ * @returns {Object} - Transaction result
+ */
+const submitTransaction = async (params) => {
+  const { source, functionName, args = [] } = params;
+  
+  if (!sorobanClient || !contract) {
+    console.warn('Soroban client not initialized, using simulated transaction');
+    return await simulateTransaction(functionName, args);
+  }
+
+  try {
+    // Get the source account
+    const sourceAccount = await sorobanClient.getAccount(source.publicKey());
+    
+    // Build the transaction
+    const transaction = contract.call(
+      functionName,
+      ...args
+    ).addResourceFee(sourceAccount);
+    
+    // Sign the transaction
+    const preparedTransaction = await sorobanClient.prepareTransaction(transaction, sourceAccount);
+    preparedTransaction.sign(source);
+    
+    // Submit the transaction
+    const sendResponse = await sorobanClient.sendTransaction(preparedTransaction);
+    
+    if (sendResponse.status === "PENDING") {
+      // Wait for the transaction to be confirmed
+      let getResponse = await sorobanClient.getTransaction(sendResponse.hash);
+      while (getResponse.status === "NOT_FOUND") {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        getResponse = await sorobanClient.getTransaction(sendResponse.hash);
+      }
+      
+      if (getResponse.status === "SUCCESS") {
+        return {
+          status: 'success',
+          transactionHash: sendResponse.hash,
+          result: getResponse.returnValue
+        };
+      } else {
+        throw new Error(`Transaction failed: ${getResponse.resultXdr}`);
+      }
+    } else {
+      throw new Error(`Transaction submission failed: ${sendResponse.status}`);
+    }
+  } catch (error) {
+    console.error(`Blockchain transaction error for ${functionName}:`, error);
+    throw error;
+  }
+};
 
 /**
  * Helper function to simulate a transaction (for development)
@@ -108,21 +171,20 @@ const updateKarmaOnBlockchain = async (walletAddress, activityType) => {
 /**
  * Stake tokens on the blockchain
  * @param {string} walletAddress - User's wallet address
- * @param {string} tokenAddress - Token contract address
  * @param {number} amount - Amount of tokens to stake
  * @returns {Object} - Blockchain transaction result
  */
-const stakeTokensOnBlockchain = async (walletAddress, tokenAddress, amount) => {
+const stakeTokensOnBlockchain = async (walletAddress, amount) => {
   try {
     if (!sorobanClient || !contract) {
       console.warn('Soroban client not initialized, using simulated transaction');
-      return await simulateTransaction('stake_tokens', [walletAddress, tokenAddress, amount]);
+      return await simulateTransaction('stake_tokens', [walletAddress, amount]);
     }
 
     console.log(`Staking ${amount} tokens for user ${walletAddress} on blockchain`);
     
     // For now, we'll simulate the call until we have proper signing keys
-    return await simulateTransaction('stake_tokens', [walletAddress, tokenAddress, amount]);
+    return await simulateTransaction('stake_tokens', [walletAddress, amount]);
   } catch (error) {
     console.error('Blockchain staking error:', error);
     throw error;
@@ -132,21 +194,20 @@ const stakeTokensOnBlockchain = async (walletAddress, tokenAddress, amount) => {
 /**
  * Unstake tokens on the blockchain
  * @param {string} walletAddress - User's wallet address
- * @param {string} tokenAddress - Token contract address
  * @param {number} amount - Amount of tokens to unstake
  * @returns {Object} - Blockchain transaction result
  */
-const unstakeTokensOnBlockchain = async (walletAddress, tokenAddress, amount) => {
+const unstakeTokensOnBlockchain = async (walletAddress, amount) => {
   try {
     if (!sorobanClient || !contract) {
       console.warn('Soroban client not initialized, using simulated transaction');
-      return await simulateTransaction('withdraw_stake', [walletAddress, tokenAddress, amount]);
+      return await simulateTransaction('withdraw_stake', [walletAddress, amount]);
     }
 
     console.log(`Unstaking ${amount} tokens for user ${walletAddress} on blockchain`);
     
     // For now, we'll simulate the call until we have proper signing keys
-    return await simulateTransaction('withdraw_stake', [walletAddress, tokenAddress, amount]);
+    return await simulateTransaction('withdraw_stake', [walletAddress, amount]);
   } catch (error) {
     console.error('Blockchain unstaking error:', error);
     throw error;

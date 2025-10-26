@@ -87,15 +87,15 @@ class ApiService {
 	}
 
 	// Activity endpoints
-	async getUserActivities(walletAddress) {
-		return this.request(`/api/activities/user/${walletAddress}`);
-	}
-
 	async recordActivity(activityData) {
 		return this.request('/api/activities', {
 			method: 'POST',
 			body: JSON.stringify(activityData),
 		});
+	}
+
+	async getUserActivities(walletAddress) {
+		return this.request(`/api/activities/user/${walletAddress}`);
 	}
 
 	// Karma endpoints
@@ -119,6 +119,13 @@ class ApiService {
 		return this.request('/api/staking/unstake', {
 			method: 'POST',
 			body: JSON.stringify({ walletAddress, amount }),
+		});
+	}
+
+	async redeemKarma(walletAddress, karmaAmount) {
+		return this.request('/api/staking/redeem', {
+			method: 'POST',
+			body: JSON.stringify({ walletAddress, karmaPoints: karmaAmount }),
 		});
 	}
 

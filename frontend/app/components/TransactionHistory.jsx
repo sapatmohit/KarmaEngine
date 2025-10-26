@@ -95,6 +95,30 @@ const TransactionHistory = () => {
             </svg>
           </div>
         );
+      case 'stake':
+        return (
+          <div className="w-6 h-6 bg-indigo-500 rounded-full flex items-center justify-center">
+            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+            </svg>
+          </div>
+        );
+      case 'unstake':
+        return (
+          <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
+            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M16 18l2.29-2.29-4.88-4.88-4 4L2 7.41 3.41 6l6 6 4-4 6.3 6.29L22 12v6z"/>
+            </svg>
+          </div>
+        );
+      case 'redeem':
+        return (
+          <div className="w-6 h-6 bg-teal-500 rounded-full flex items-center justify-center">
+            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-8 8z"/>
+            </svg>
+          </div>
+        );
       default:
         return (
           <div className="w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center">
@@ -158,6 +182,12 @@ const TransactionHistory = () => {
         return 'text-purple-400';
       case 'report':
         return 'text-yellow-400';
+      case 'stake':
+        return 'text-indigo-400';
+      case 'unstake':
+        return 'text-orange-400';
+      case 'redeem':
+        return 'text-teal-400';
       default:
         return 'text-gray-400';
     }
@@ -272,12 +302,16 @@ const TransactionHistory = () => {
                     <div className="flex items-center space-x-2">
                       {getSocialMediaIcon(transaction.metadata?.network)}
                       <span className="text-gray-300">
-                        {transaction.metadata?.network || 'General'}
+                        {transaction.metadata?.network || 
+                         (transaction.type === 'stake' || transaction.type === 'unstake' ? 'Staking' : 
+                          transaction.type === 'redeem' ? 'Redemption' : 'General')}
                       </span>
                     </div>
                   </td>
                   <td className="py-3 px-2 text-sm text-white">
-                    {(transaction.finalKarma || transaction.value * (transaction.multiplier || 1)) / 10} XLM
+                    {transaction.type === 'redeem' 
+                      ? `${transaction.metadata?.xlmTokens || 0} XLM` 
+                      : `${(transaction.finalKarma || transaction.value * (transaction.multiplier || 1)) / 10} XLM`}
                   </td>
                   <td className="py-3 px-2 text-sm">
                     <div className="flex items-center space-x-2">
@@ -297,7 +331,7 @@ const TransactionHistory = () => {
                             strokeLinecap="round" 
                             strokeLinejoin="round" 
                             strokeWidth={2} 
-                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" 
+                            d="M10 6H6a2 2 0 01-2-2V6a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" 
                           />
                         </svg>
                       </button>

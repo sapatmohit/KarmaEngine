@@ -1,6 +1,8 @@
 const Staking = require('../models/Staking');
 const User = require('../models/User');
+const Activity = require('../models/Activity');
 const { stakeTokensOnBlockchain, unstakeTokensOnBlockchain, redeemKarmaForXLMOnBlockchain } = require('../services/blockchainService');
+const mongoose = require('mongoose');
 
 // Multiplier tiers based on staked amount
 const MULTIPLIER_TIERS = [
@@ -30,11 +32,17 @@ const getMultiplier = (amount) => {
  */
 const stakeTokens = async (req, res) => {
   try {
-    const { walletAddress, tokenAddress, amount, transactionHash } = req.body;
+    const { walletAddress, amount } = req.body;
 
     // Validate required fields
-    if (!walletAddress || !tokenAddress || !amount) {
-      return res.status(400).json({ message: 'Wallet address, token address, and amount are required' });
+    if (!walletAddress || !amount) {
+      return res.status(400).json({ message: 'Wallet address and amount are required' });
+    }
+
+    // Validate amount
+    const amountNum = parseFloat(amount);
+    if (isNaN(amountNum) || amountNum <= 0) {
+      return res.status(400).json({ message: 'Amount must be a positive number' });
     }
 
     // Find user
@@ -43,25 +51,50 @@ const stakeTokens = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    // Check if user has enough karma points
+    if (user.karmaPoints < amountNum) {
+      return res.status(400).json({ message: 'Insufficient karma points' });
+    }
+
     // Stake tokens on blockchain
-    const blockchainResult = await stakeTokensOnBlockchain(walletAddress, tokenAddress, amount);
+    const blockchainResult = await stakeTokensOnBlockchain(walletAddress, amountNum);
 
     // Create staking record
     const staking = new Staking({
       userId: user._id,
       walletAddress,
-      amount,
-      multiplier: getMultiplier(amount),
-      transactionHash,
+      amount: amountNum,
+      multiplier: getMultiplier(user.stakedAmount + amountNum),
+      transactionHash: blockchainResult.transactionHash || '0x' + Math.random().toString(36).substring(2, 15),
       isActive: true
     });
 
     await staking.save();
 
     // Update user's staked amount and multiplier
-    user.stakedAmount += amount;
+    user.stakedAmount = (user.stakedAmount || 0) + amountNum;
+    user.karmaPoints = (user.karmaPoints || 0) - amountNum;
     user.multiplier = getMultiplier(user.stakedAmount);
     await user.save();
+
+    // Create activity record for staking
+    console.log('Creating staking activity record for user:', user.walletAddress);
+    const activity = new Activity({
+      userId: new mongoose.Types.ObjectId(user._id), // Ensure proper ObjectId type
+      walletAddress: user.walletAddress,
+      type: 'stake',
+      value: amountNum,
+      multiplier: user.multiplier,
+      finalKarma: -amountNum, // Negative because it's deducted from karma
+      timestamp: new Date(),
+      metadata: {
+        stakingId: staking._id,
+        transactionHash: staking.transactionHash
+      }
+    });
+
+    await activity.save();
+    console.log('Staking activity record saved successfully');
 
     res.status(201).json({
       message: 'Tokens staked successfully',
@@ -75,6 +108,7 @@ const stakeTokens = async (req, res) => {
       user: {
         walletAddress: user.walletAddress,
         stakedAmount: user.stakedAmount,
+        karmaPoints: user.karmaPoints,
         multiplier: user.multiplier
       },
       blockchainResult
@@ -92,11 +126,17 @@ const stakeTokens = async (req, res) => {
  */
 const unstakeTokens = async (req, res) => {
   try {
-    const { walletAddress, tokenAddress, stakingId, amount } = req.body;
+    const { walletAddress, amount } = req.body;
 
     // Validate required fields
-    if (!walletAddress || !tokenAddress || !stakingId || !amount) {
-      return res.status(400).json({ message: 'Wallet address, token address, staking ID, and amount are required' });
+    if (!walletAddress || !amount) {
+      return res.status(400).json({ message: 'Wallet address and amount are required' });
+    }
+
+    // Validate amount
+    const amountNum = parseFloat(amount);
+    if (isNaN(amountNum) || amountNum <= 0) {
+      return res.status(400).json({ message: 'Amount must be a positive number' });
     }
 
     // Find user
@@ -105,24 +145,52 @@ const unstakeTokens = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Find staking record
-    const staking = await Staking.findOne({ _id: stakingId, userId: user._id, isActive: true });
-    if (!staking) {
-      return res.status(404).json({ message: 'Staking record not found or already unstaked' });
+    // Check if user has enough staked amount
+    if ((user.stakedAmount || 0) < amountNum) {
+      return res.status(400).json({ message: 'Insufficient staked amount' });
     }
 
     // Unstake tokens on blockchain
-    const blockchainResult = await unstakeTokensOnBlockchain(walletAddress, tokenAddress, amount);
+    const blockchainResult = await unstakeTokensOnBlockchain(walletAddress, amountNum);
 
-    // Update staking record
-    staking.isActive = false;
-    staking.endDate = Date.now();
+    // Create unstaking record
+    const staking = new Staking({
+      userId: user._id,
+      walletAddress,
+      amount: amountNum,
+      multiplier: getMultiplier(user.stakedAmount - amountNum),
+      transactionHash: blockchainResult.transactionHash || '0x' + Math.random().toString(36).substring(2, 15),
+      isActive: false,
+      startDate: Date.now(),
+      endDate: Date.now()
+    });
+
     await staking.save();
 
     // Update user's staked amount and multiplier
-    user.stakedAmount -= amount;
+    user.stakedAmount = (user.stakedAmount || 0) - amountNum;
+    user.karmaPoints = (user.karmaPoints || 0) + amountNum;
     user.multiplier = getMultiplier(user.stakedAmount);
     await user.save();
+
+    // Create activity record for unstaking
+    console.log('Creating unstaking activity record for user:', user.walletAddress);
+    const activity = new Activity({
+      userId: new mongoose.Types.ObjectId(user._id), // Ensure proper ObjectId type
+      walletAddress: user.walletAddress,
+      type: 'unstake',
+      value: amountNum,
+      multiplier: user.multiplier,
+      finalKarma: amountNum, // Positive because it's added to karma
+      timestamp: new Date(),
+      metadata: {
+        stakingId: staking._id,
+        transactionHash: staking.transactionHash
+      }
+    });
+
+    await activity.save();
+    console.log('Unstaking activity record saved successfully');
 
     res.json({
       message: 'Tokens unstaked successfully',
@@ -136,6 +204,7 @@ const unstakeTokens = async (req, res) => {
       user: {
         walletAddress: user.walletAddress,
         stakedAmount: user.stakedAmount,
+        karmaPoints: user.karmaPoints,
         multiplier: user.multiplier
       },
       blockchainResult
@@ -201,8 +270,9 @@ const redeemKarma = async (req, res) => {
       return res.status(400).json({ message: 'Wallet address and karma points are required' });
     }
 
-    if (karmaPoints <= 0) {
-      return res.status(400).json({ message: 'Karma points must be greater than zero' });
+    const karmaPointsNum = parseFloat(karmaPoints);
+    if (isNaN(karmaPointsNum) || karmaPointsNum <= 0) {
+      return res.status(400).json({ message: 'Karma points must be a positive number' });
     }
 
     // Find user
@@ -212,22 +282,41 @@ const redeemKarma = async (req, res) => {
     }
 
     // Check if user has enough karma points
-    if (user.karmaPoints < karmaPoints) {
+    if ((user.karmaPoints || 0) < karmaPointsNum) {
       return res.status(400).json({ message: 'Insufficient karma points' });
     }
 
     // Redeem karma points on blockchain
-    const blockchainResult = await redeemKarmaForXLMOnBlockchain(walletAddress, karmaPoints);
+    const blockchainResult = await redeemKarmaForXLMOnBlockchain(walletAddress, karmaPointsNum);
 
     // Update user's karma points
-    user.karmaPoints -= karmaPoints;
+    user.karmaPoints = (user.karmaPoints || 0) - karmaPointsNum;
     user.lastActivity = Date.now();
     await user.save();
+
+    // Create activity record for redemption
+    console.log('Creating redemption activity record for user:', user.walletAddress);
+    const activity = new Activity({
+      userId: new mongoose.Types.ObjectId(user._id), // Ensure proper ObjectId type
+      walletAddress: user.walletAddress,
+      type: 'redeem',
+      value: karmaPointsNum,
+      multiplier: 1.0,
+      finalKarma: -karmaPointsNum, // Negative because it's deducted from karma
+      timestamp: new Date(),
+      metadata: {
+        xlmTokens: blockchainResult.xlmTokensReceived,
+        transactionHash: blockchainResult.transactionHash
+      }
+    });
+
+    await activity.save();
+    console.log('Redemption activity record saved successfully');
 
     res.status(200).json({
       message: 'Karma points redeemed successfully',
       redeemed: {
-        karmaPoints: karmaPoints,
+        karmaPoints: karmaPointsNum,
         xlmTokens: blockchainResult.xlmTokensReceived,
         transactionHash: blockchainResult.transactionHash
       },
