@@ -91,10 +91,10 @@ export default function Dashboard() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <GlassCard className="text-center">
+          <GlassCard className="justify-items-center justify-evenly">
             <h3 className="text-gray-400 text-sm font-medium mb-1">Karma Balance</h3>
             <div className="text-2xl font-bold text-white flex items-center">
-              <img src="./karma_token_icon.svg" alt="Karma Token" className="w-5 h-5 mr-1" />
+              <img src="./karma_token_icon.svg" alt="Karma Token" className="w-6 h-6 mr-1 rounded-full" />
               {userData.karmaBalance?.toLocaleString() || 0}
             </div>
             <div className="mt-2">
@@ -106,7 +106,7 @@ export default function Dashboard() {
             <h3 className="text-gray-400 text-sm font-medium mb-1">Staked Amount</h3>
             <div className="text-2xl font-bold text-white">{userData.stakeAmount?.toLocaleString() || 0} XLM</div>
             <div className="mt-2">
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+              <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                 Multiplier: x{userData.multiplier}
               </span>
             </div>
@@ -116,7 +116,7 @@ export default function Dashboard() {
             <h3 className="text-gray-400 text-sm font-medium mb-1">Total Activities</h3>
             <div className="text-2xl font-bold text-white">{activities?.length || 0}</div>
             <div className="mt-2">
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+              <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                 Active User
               </span>
             </div>
