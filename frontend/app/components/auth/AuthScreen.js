@@ -74,7 +74,7 @@ export default function AuthScreen() {
             >
               {/* Logo */}
               <div className="text-center mb-8">
-                <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-white font-bold text-2xl">K</span>
                 </div>
                 <h1 className="text-3xl font-bold text-white mb-2">Karma Engine</h1>
@@ -116,7 +116,7 @@ export default function AuthScreen() {
               {/* Features */}
               <div className="mt-8 space-y-4">
                 <div className="flex items-center space-x-3 text-gray-300">
-                  <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 bg-purple-500/20 rounded-full flex items-center justify-center">
                     <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
@@ -124,7 +124,7 @@ export default function AuthScreen() {
                   <span className="text-sm">Earn karma through activities</span>
                 </div>
                 <div className="flex items-center space-x-3 text-gray-300">
-                  <div className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center">
                     <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                     </svg>
@@ -132,7 +132,7 @@ export default function AuthScreen() {
                   <span className="text-sm">Stake karma for multipliers</span>
                 </div>
                 <div className="flex items-center space-x-3 text-gray-300">
-                  <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center">
                     <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -151,7 +151,7 @@ export default function AuthScreen() {
             >
               {/* Header */}
               <div className="text-center mb-8">
-                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-white font-bold text-lg">K</span>
                 </div>
                 <h1 className="text-2xl font-bold text-white mb-2">Complete Registration</h1>

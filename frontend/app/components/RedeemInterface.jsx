@@ -43,26 +43,9 @@ const RedeemInterface = () => {
 
   return (
     <div className="bg-gray-900/50 backdrop-blur-md border border-gray-800 rounded-2xl p-6">
-      {/* Header Tabs */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex space-x-1 bg-gray-800/50 rounded-lg p-1">
-          {[
-            { id: 'redeem', name: 'Redeem' },
-            { id: 'limit', name: 'Limit' }
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeTab === tab.id
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              {tab.name}
-            </button>
-          ))}
-        </div>
+      {/* Header Title */}
+      <div className="mb-6">
+        <h3 className="text-lg font-bold text-white">Redeem Karma</h3>
       </div>
 
       {/* Main Swap Interface */}
@@ -93,45 +76,12 @@ const RedeemInterface = () => {
               >
                 MAX
               </button>
-              <div className="relative">
-                <button 
-                  onClick={() => setIsTokenDropdownOpen(!isTokenDropdownOpen)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition-colors"
-                >
-                  <span>{selectedKarmaToken}</span>
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </button>
-                {isTokenDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-40 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-50">
-                    <button
-                      onClick={() => {
-                        setSelectedKarmaToken('KARMA');
-                        setIsTokenDropdownOpen(false);
-                      }}
-                      className="w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700 transition-colors flex items-center space-x-2"
-                    >
-                      <div className="w-6 h-6">
-                        <img src="./karma_token_icon.svg" alt="Karma Token" className="w-6 h-6" />
-                      </div>
-                      <span>KARMA</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSelectedKarmaToken('XLM');
-                        setIsTokenDropdownOpen(false);
-                      }}
-                      className="w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700 transition-colors flex items-center space-x-2 border-t border-gray-700"
-                    >
-                      <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                        <span className="text-xs font-bold">X</span>
-                      </div>
-                      <span>XLM</span>
-                    </button>
-                  </div>
-                )}
-              </div>
+              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition-colors">
+                <div className="w-6 h-6">
+                  <img src="./karma_token_icon.svg" alt="Karma Token" className="w-6 h-6" />
+                </div>
+                <span>KARMA</span>
+              </button>
             </div>
           </div>
         </div>
@@ -156,17 +106,12 @@ const RedeemInterface = () => {
                 ≈ ${(parseFloat(xlmAmount || 0) * 0.5).toFixed(2)} USD
               </div>
             </div>
-            <div className="flex items-center space-x-2 ml-4">
-              <button className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition-colors">
-                <div className="w-6 h-6">
-                  <img src="./karma_token_icon.svg" alt="Karma Token" className="w-6 h-6" />
-                </div>
-                <span>XLM</span>
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-              </button>
-            </div>
+            <button className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition-colors">
+              <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                <span className="text-xs font-bold">X</span>
+              </div>
+              <span>XLM</span>
+            </button>
           </div>
         </div>
 
@@ -182,13 +127,14 @@ const RedeemInterface = () => {
           </div>
         </div>
 
-        {/* Connect Wallet Button */}
+        {/* Redeem Button */}
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="w-full py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-medium text-lg transition-all duration-200 transform hover:scale-105"
+          onClick={handleRedeem}
+          className="w-full py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl font-medium text-lg transition-all duration-200 transform hover:scale-105"
         >
-          Connect Wallet
+          Redeem
         </motion.button>
       </div>
     </div>
