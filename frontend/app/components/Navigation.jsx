@@ -69,7 +69,7 @@ const Navigation = () => {
   
   const navItems = [
     { name: 'Dashboard', path: '/dashboard' },
-    { name: 'Track', path: '/activities' },
+    // { name: 'Track', path: '/activities' },
     { name: 'Leaderboard', path: '/leaderboard' },
     { name: 'Staking', path: '/staking' },
   ];
