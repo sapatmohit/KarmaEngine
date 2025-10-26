@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { useKarma } from '../contexts/KarmaContext';
-import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, BarChart, Bar } from 'recharts';
 import { format } from 'date-fns';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ImageCaptureModal, SocialShareModal, FullscreenChartModal } from './ChartModals';
+import { AnimatePresence, motion } from 'framer-motion';
 import html2canvas from 'html2canvas';
+import { useEffect, useRef, useState } from 'react';
+import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { useKarma } from '../contexts/KarmaContext';
+import { FullscreenChartModal, ImageCaptureModal, SocialShareModal } from './ChartModals';
 
 const KarmaChart = ({ karmaData = [] }) => {
   const { karmaBalance } = useKarma();
@@ -192,8 +192,8 @@ const KarmaChart = ({ karmaData = [] }) => {
           <div className="flex items-center space-x-4">
             {/* Token Avatar */}
             <div className="relative">
-              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center border-2 border-white">
-                <span className="text-white font-bold text-lg">K</span>
+              <div className="w-12 h-12">
+                <img src="./karma_token_icon.svg" alt="Karma Token" className="w-12 h-12" />
               </div>
             </div>
 
@@ -380,8 +380,8 @@ const KarmaChart = ({ karmaData = [] }) => {
               <div className="flex items-center space-x-4">
                 {/* Token Avatar */}
                 <div className="relative">
-                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center border-2 border-white">
-                    <span className="text-white font-bold text-lg">K</span>
+                  <div className="w-12 h-12">
+                    <img src="./karma_token_icon.svg" alt="Karma Token" className="w-12 h-12" />
                   </div>
                 </div>
 
@@ -391,7 +391,7 @@ const KarmaChart = ({ karmaData = [] }) => {
                     <h1 className="text-2xl font-bold text-white">Your Karma Score</h1>
                     <span className="text-gray-400 text-lg">KARMA</span>
                     <svg className="w-5 h-5 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
                   </div>
                 </div>

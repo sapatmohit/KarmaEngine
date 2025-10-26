@@ -193,10 +193,29 @@ export default function Profile() {
           <div className="lg:col-span-1 space-y-6">
             <GlassCard className="text-center">
               <div className="flex flex-col items-center">
-                <div className="w-24 h-24 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center mb-4">
-                  <span className="text-2xl font-bold text-white">
+                {/* User Avatar */}
+                <div className="relative mb-4">
+                  {userData.avatar ? (
+                    <img 
+                      src={userData.avatar} 
+                      alt="Profile" 
+                      className="w-24 h-24 rounded-full object-cover border-2 border-purple-500"
+                      onError={(e) => {
+                        // Fallback to initial-based avatar if image fails to load
+                        e.target.onerror = null;
+                        e.target.style.display = 'none';
+                        document.getElementById('fallback-avatar').style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  {/* Fallback avatar with user's initial */}
+                  <div 
+                    id="fallback-avatar"
+                    className="w-24 h-24 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-2xl font-bold text-white"
+                    style={{ display: userData.avatar ? 'none' : 'flex' }}
+                  >
                     {userData.name ? userData.name.charAt(0).toUpperCase() : 'U'}
-                  </span>
+                  </div>
                 </div>
                 <h2 className="text-xl font-bold text-white">{userData.name || 'User'}</h2>
                 <div className="mt-2">
@@ -216,7 +235,10 @@ export default function Profile() {
                 <div>
                   <div className="flex justify-between mb-1">
                     <span className="text-gray-400">Karma Balance</span>
-                    <span className="font-bold text-white">{karmaBalance}</span>
+                    <span className="font-bold text-white flex items-center">
+                      <img src="./karma_token_icon.svg" alt="Karma Token" className="w-4 h-4 mr-1" />
+                      {karmaBalance}
+                    </span>
                   </div>
                   <div className="w-full bg-gray-700 rounded-full h-2">
                     <div 

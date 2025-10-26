@@ -125,6 +125,11 @@ class ApiService {
 	async getStakingInfo(walletAddress) {
 		return this.request(`/staking/${walletAddress}`);
 	}
+
+	// Transaction history endpoints
+	async getUserTransactions(walletAddress) {
+		return this.request(`/activities/user/${walletAddress}`);
+	}
 }
 
 export default new ApiService();

@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import GlassCard from '../components/GlassCard';
 import KarmaBadge from '../components/KarmaBadge';
 import KarmaChart from '../components/KarmaChart';
@@ -12,20 +12,43 @@ import TierIndicator from '../components/TierIndicator';
 import TransactionHistory from '../components/TransactionHistory';
 import { useAuth } from '../contexts/AuthContext';
 import { useKarma } from '../contexts/KarmaContext';
+import ApiService from '../services/api';
 
 export default function Dashboard() {
   const router = useRouter();
-  const { karmaBalance, stakeAmount } = useKarma();
-  const { user, isLoading, isAuthenticated } = useAuth();
+  const { karmaBalance, stakeAmount, activities } = useKarma();
+  const { user, isLoading: authLoading, isAuthenticated } = useAuth();
+  const [recentActivities, setRecentActivities] = useState([]);
 
   useEffect(() => {
     // Redirect to login if not authenticated
-    if (!isLoading && !isAuthenticated) {
+    if (!authLoading && !isAuthenticated) {
       router.push('/auth/login');
     }
-  }, [isLoading, isAuthenticated, router]);
+  }, [authLoading, isAuthenticated, router]);
 
-  if (isLoading) {
+  useEffect(() => {
+    // Update recent activities when activities change
+    if (activities && activities.length > 0) {
+      setRecentActivities(activities.slice(0, 3));
+    } else {
+      setRecentActivities([]);
+    }
+  }, [activities]);
+
+  const getTierInfo = (stake) => {
+    if (stake >= 500) return { name: 'Influencer', color: 'from-purple-500 to-pink-500' };
+    if (stake >= 100) return { name: 'Trusted', color: 'from-blue-500 to-cyan-500' };
+    return { name: 'Regular', color: 'from-gray-500 to-gray-600' };
+  };
+
+  const getMultiplier = (stake) => {
+    if (stake >= 500) return 2;
+    if (stake >= 100) return 1.5;
+    return 1;
+  };
+
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -40,27 +63,17 @@ export default function Dashboard() {
     return null;
   }
 
-  // Mock data - will be replaced with real data from API
+  const tierInfo = getTierInfo(stakeAmount);
+  const multiplier = getMultiplier(stakeAmount);
+
+  // User data
   const userData = {
-    walletAddress: '0x742d35Cc6634C0532925a3b8D4C0532925a3b8D4',
+    walletAddress: user?.walletAddress || '0x742d35Cc6634C0532925a3b8D4C0532925a3b8D4',
     karmaBalance: karmaBalance,
     stakeAmount: stakeAmount,
-    tier: stakeAmount >= 500 ? 'Influencer' : stakeAmount >= 100 ? 'Trusted' : 'Regular',
-    multiplier: stakeAmount >= 500 ? 2 : stakeAmount >= 100 ? 1.5 : 1
+    tier: tierInfo.name,
+    multiplier: multiplier
   };
-
-  const recentActivities = [
-    { id: 1, type: 'Post', karma: 5, multiplier: 1.5, timestamp: '2 hours ago' },
-    { id: 2, type: 'Comment', karma: 3, multiplier: 1.5, timestamp: '5 hours ago' },
-    { id: 3, type: 'Like', karma: 1, multiplier: 1.5, timestamp: '1 day ago' },
-    { id: 4, type: 'Repost', karma: 2, multiplier: 1.5, timestamp: '2 days ago' },
-  ];
-
-  const stats = [
-    { name: 'Total Activities', value: '142' },
-    { name: 'Current Streak', value: '12 days' },
-    { name: 'Rank', value: '#42' },
-  ];
 
   return (
     <MainLayout>
@@ -75,6 +88,40 @@ export default function Dashboard() {
             <TierIndicator tier={userData.tier} stakeAmount={userData.stakeAmount} />
           </div>
         </div>        
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <GlassCard className="text-center">
+            <h3 className="text-gray-400 text-sm font-medium mb-1">Karma Balance</h3>
+            <div className="text-2xl font-bold text-white flex items-center">
+              <img src="./karma_token_icon.svg" alt="Karma Token" className="w-5 h-5 mr-1" />
+              {userData.karmaBalance?.toLocaleString() || 0}
+            </div>
+            <div className="mt-2">
+              <KarmaBadge karma={userData.karmaBalance} />
+            </div>
+          </GlassCard>
+          
+          <GlassCard className="text-center">
+            <h3 className="text-gray-400 text-sm font-medium mb-1">Staked Amount</h3>
+            <div className="text-2xl font-bold text-white">{userData.stakeAmount?.toLocaleString() || 0} XLM</div>
+            <div className="mt-2">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                Multiplier: x{userData.multiplier}
+              </span>
+            </div>
+          </GlassCard>
+          
+          <GlassCard className="text-center">
+            <h3 className="text-gray-400 text-sm font-medium mb-1">Total Activities</h3>
+            <div className="text-2xl font-bold text-white">{activities?.length || 0}</div>
+            <div className="mt-2">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                Active User
+              </span>
+            </div>
+          </GlassCard>
+        </div>
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -119,20 +166,36 @@ export default function Dashboard() {
               <GlassCard>
                 <h2 className="text-xl font-bold mb-4">Recent Activities</h2>
                 <div className="space-y-4">
-                  {recentActivities.slice(0, 3).map((activity) => (
-                    <div key={activity.id} className="flex items-center justify-between pb-4 border-b border-gray-800 last:border-0 last:pb-0">
-                      <div>
-                        <h3 className="font-medium">{activity.type}</h3>
-                        <p className="text-sm text-gray-400">{activity.timestamp}</p>
+                  {recentActivities.length > 0 ? (
+                    recentActivities.map((activity) => (
+                      <div key={activity.id} className="flex items-center justify-between pb-4 border-b border-gray-800 last:border-0 last:pb-0">
+                        <div>
+                          <h3 className="font-medium capitalize text-white">{activity.type}</h3>
+                          <p className="text-sm text-gray-400">
+                            {activity.timestamp 
+                              ? new Date(activity.timestamp).toLocaleString() 
+                              : 'Just now'}
+                          </p>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          {activity.multiplier && activity.multiplier !== 1 && (
+                            <span className="text-gray-400">x{activity.multiplier}</span>
+                          )}
+                          <KarmaBadge karma={activity.finalKarma || activity.value * (activity.multiplier || 1)} />
+                        </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <span className="text-gray-400">x{activity.multiplier}</span>
-                        <KarmaBadge karma={activity.karma * activity.multiplier} />
-                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-4 text-gray-500">
+                      <p>No recent activities</p>
+                      <p className="text-sm mt-1">Start engaging to earn karma!</p>
                     </div>
-                  ))}
+                  )}
                 </div>
-                <button className="w-full mt-4 btn-glass py-3 rounded-lg">
+                <button 
+                  onClick={() => router.push('/activities')}
+                  className="w-full mt-4 btn-glass py-3 rounded-lg"
+                >
                   View All Activities
                 </button>
               </GlassCard>
